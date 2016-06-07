@@ -9,24 +9,30 @@ if (myversion == undefined || myversion.length == 0 ||  validversions.indexOf(my
 	myversion = 1
 }
 
-
-requireUniquelfw('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js', function()
+var isProd = 'cdn.';
+if (getParameterByNameUniquelfw('isprod') == '0')
 {
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js','js');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css','css');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js','js');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css','css');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js','js');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js','js');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js','js');
-	loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/xml2json.min.js','js');
+	isProd = '';
+}
+
+
+requireUniquelfw('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js', function()
+{
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js','js');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css','css');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js','js');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css','css');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js','js');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js','js');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js','js');
+	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/xml2json.min.js','js');
 
 
 	var j2$ = jQuery.noConflict();
 
 	j2$(document).ready(function()
 	{
-		j2$( "#MainContent" ).load( "https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/"+myversion+"/main.htm",  function( response, status, xhr ) 
+		j2$( "#MainContent" ).load( "https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/"+myversion+"/main.htm",  function( response, status, xhr ) 
 		{
 			if ( status == "error" ) 
 			{
@@ -35,7 +41,7 @@ requireUniquelfw('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+
 			}
 			else
 			{
-				loadjscssfile('https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.js','js');
+				loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.js','js');
 			}
 		});
 	});
