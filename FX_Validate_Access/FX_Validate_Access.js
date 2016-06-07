@@ -32,7 +32,7 @@ requireUniquelfw('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Acc
 
 	j2$(document).ready(function()
 	{
-		j2$( "#MainContent" ).load( "https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/"+myversion+"/main.htm",  function( response, status, xhr ) 
+		j2$( "#MainContent" ).load( 'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.htm',  function( response, status, xhr ) 
 		{
 			if ( status == "error" ) 
 			{
