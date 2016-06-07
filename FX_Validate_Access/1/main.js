@@ -2,6 +2,7 @@
         var j$ = jQuery.noConflict();
         var RemoteGetObjectInfoResult;
         var myuserId = '';
+        var mysessionId = getParameterByName('sessionId');
 
         function getParameterByName(name) 
         {
@@ -142,7 +143,7 @@
 
         j$(document).ready(function()
         {
-            var conn = new jsforce.Connection({accessToken : '{!$Api.Session_ID}'});
+            var conn = new jsforce.Connection({accessToken : mysessionId});
             var finalresult = {FXObjects:[],FXRelatedObjects:[],PermissionSets:[],PackageLicense:[],ApexClassAccess:[],VFPageAccess:[],SystemPermissions:[]};
 
             myuserId = getParameterByName('id');
