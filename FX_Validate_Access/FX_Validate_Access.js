@@ -15,13 +15,45 @@ if (getParameterByNameUniquelfw('isprod') == '0')
 	isProd = '';
 }
 
+var loadurls = [];
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js',type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css',type:'css'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js',type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css',type:'css'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js',type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js',type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js',type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/xml2json.min.js',type:'js'});
 
+loadresourcesinorder(loadurls, function()
+{
+	var j2$ = jQuery.noConflict();
+
+	j2$(document).ready(function()
+	{
+		j2$( "#MainContent" ).load( 'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.htm',  function( response, status, xhr ) 
+		{
+			if ( status == "error" ) 
+			{
+				var msg = "Sorry but there was an error: ";
+				j2$( "MainContent" ).html( msg + xhr.status + " " + xhr.statusText );
+			}
+			else
+			{
+				loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.js','js');
+			}
+		});
+	});
+
+});
+
+/*
 requireUniquelfw('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js', function()
 {
 	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js','js');
 	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css','css');
 	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js','js');
-	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css','css');
+	loadjscssfile(,'css');
 	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js','js');
 	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js','js');
 	loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js','js');
@@ -47,6 +79,28 @@ requireUniquelfw('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Acc
 	});
 
 });
+*/
+
+function loadresourcesinorder(urls, callback)
+{
+
+	 if (urls != undefined && Array.isArray(urls)  && urls.length > 0)
+	 {
+	 	var myurl = urls[0].url;
+	 	var mytype = urls[0].type;
+	 	urls.splice(0, 1);
+	 	requireUniquelfw(myurl,mytype, 
+	 	function()
+		{
+			loadresourcesinorder(urls,callback);
+		});
+	 }
+	 else
+	 {
+	 	callback(null,true);
+	 }
+
+}
 
 
 
@@ -76,19 +130,35 @@ function loadjscssfile(filename, filetype){
 
 
 
-function requireUniquelfw(file,callback){
-    var head=document.getElementsByTagName("head")[0];
-    var script=document.createElement('script');
-    script.src=file;
-    script.type='text/javascript';
-    //real browsers
-    script.onload=callback;
-    //Internet explorer
-    script.onreadystatechange = function() {
-        if (this.readyState == 'complete') {
-            callback();
-        }
-    }
-    head.appendChild(script);
+function requireUniquelfw(filename,filetype,callback)
+{
+	 var head=document.getElementsByTagName("head")[0];
+	 if (filetype=="js")
+	 {
+	    
+	    var script=document.createElement('script');
+	    script.src=filename;
+	    script.type='text/javascript';
+	    //real browsers
+	    script.onload=callback;
+	    //Internet explorer
+	    script.onreadystatechange = function() 
+	    {
+	        if (this.readyState == 'complete') 
+	        {
+	            callback();
+	        }
+	    }
+	    head.appendChild(script);
+	}
+    else if (filetype=="css")
+    { //if filename is an external CSS file
+        var fileref=document.createElement("link");
+        fileref.setAttribute("rel", "stylesheet");
+        fileref.setAttribute("type", "text/css");
+        fileref.setAttribute("href", filename);
+        head.appendChild(fileref);
+        callback();
+	}
 }
 
