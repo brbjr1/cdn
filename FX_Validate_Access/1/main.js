@@ -1,4 +1,3 @@
-  <script>
 
         var j$ = jQuery.noConflict();
         var RemoteGetObjectInfoResult;
@@ -2589,4 +2588,3 @@
         }
 
 
-    </script>

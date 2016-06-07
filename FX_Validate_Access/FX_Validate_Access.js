@@ -1,4 +1,3 @@
-<script>
 
 var myversion = getParameterByNameUniquelfw('version');
 if (myversion == 'Latest' || myversion == undefined)
@@ -83,4 +82,3 @@ function requireUniquelfw(file,callback){
     head.appendChild(script);
 }
 
-</script>
