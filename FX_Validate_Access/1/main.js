@@ -747,7 +747,7 @@
                 {
                     if (err) 
                     { 
-                         callback('Error loggin in: ' + err,null);
+                         callback('Error logging in: ' + err,null);
                     }
                     else
                     {
