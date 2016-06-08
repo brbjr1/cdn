@@ -770,7 +770,7 @@
             }
         }
 
-        function CurrentUserHasModifyAllDataAccess(conn, tid callback)
+        function CurrentUserHasModifyAllDataAccess(conn, tid, callback)
         {
             var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='"+tid+"'";
             var HasModifyAllDataAccess = false; // this is needed to access the metadata api
