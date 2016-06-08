@@ -34,7 +34,7 @@ if (myscripturl != '')
 	{
 		myversion = scrversion;
 	}
-	if (scrcdn != null)
+	if (scrcdn != null && scrcdn != '')
 	{
 		mycdnurl = scrcdn;
 		hascustoncdn = true;
@@ -44,7 +44,7 @@ if (myscripturl != '')
 	//{
 	//	mysessionId = scrsessionid;
 	//}
-	if (scrisrandom != null)
+	if (scrisrandom != null && scrisrandom != '')
 	{
 		israndom = scrisrandom == '1';
 	}
@@ -168,7 +168,7 @@ function getScriptParameterByNameUniquelfw(name, scr)
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(scr);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 
@@ -178,7 +178,7 @@ function getParameterByNameUniquelfw(name)
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 function loadjscssfile(filename, filetype){
