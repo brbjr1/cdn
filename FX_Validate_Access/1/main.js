@@ -1,18 +1,7 @@
 
         var j$ = jQuery.noConflict();
         var RemoteGetObjectInfoResult;
-        var targetUserId = '';
-        //var mysessionId = getParameterByName('sessionId');
-       // var scripts = document.getElementsByTagName("script");
-       // console.log(scripts);
-     //  alert(mycdnurl);
-        function getParameterByName(name) 
-        {
-            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-                results = regex.exec(location.search);
-            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
+       
 
         function UserTypeUpdated()
         {
@@ -146,7 +135,6 @@
         j$(document).ready(function()
         {
             var finalresult = {FXObjects:[],FXRelatedObjects:[],PermissionSets:[],PackageLicense:[],ApexClassAccess:[],VFPageAccess:[],SystemPermissions:[]};
-            targetUserId = getParameterByName('id');
             dojforcelogin(mysessionId, myloginurl,myusername,mypassword, function(loginerr, conn)
             {
                 try
@@ -2445,7 +2433,6 @@
         
             return h1;
         }
-
         
         function GetMinEAMObjectPermissions()
         {
