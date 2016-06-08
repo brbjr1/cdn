@@ -772,7 +772,7 @@
 
         function CurrentUserHasModifyAllDataAccess(conn, callback)
         {
-            var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='{!$User.Id}'";
+            var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='"+myuserid+"'";
             var HasModifyAllDataAccess = false; // this is needed to access the metadata api
             QueryRecords(conn,myquery,function(UserQueryResults)
             {
@@ -788,7 +788,7 @@
                 }
                 else
                 {
-                    myquery = "select Id, PermissionsModifyAllData from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '{!$User.Id}')";
+                    myquery = "select Id, PermissionsModifyAllData from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '"+myuserid+"')";
                     QueryRecords(conn,myquery,function(PermissionSetQueryResults)
                     {
                         if (PermissionSetQueryResults.error)
