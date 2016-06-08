@@ -727,6 +727,8 @@
             else if (lurl != null && luser != null && lpass != null
                 && lurl != '' && luser != '' && lpass != '')
             {
+                //login with user/pass is only used for testing
+                //when calling from sf accessToken is used
                 conn = new jsforce.Connection({
                   // you can change loginUrl to connect to sandbox or prerelease env.
                    loginUrl : myloginurl,version:'36.0'
@@ -739,15 +741,22 @@
                     }
                     else
                     {
-                         // Now you can get the access token and instance URL information.
-                          // Save them to establish connection next time.
-                          console.log(conn.accessToken);
-                          console.log(conn.instanceUrl);
-                          // logged in user property
-                          console.log("User ID: " + userInfo.id);
-                          console.log("Org ID: " + userInfo.organizationId);
-                          // ...
-                          callback(null,conn);
+                        // Now you can get the access token and instance URL information.
+                        // Save them to establish connection next time.
+                        console.log(conn.accessToken);
+                        console.log(conn.instanceUrl);
+                        // logged in user property
+                        console.log("User ID: " + userInfo.id);
+                        console.log("Org ID: " + userInfo.organizationId);
+
+                        myuserid = userInfo.id;
+                        if (targetUserId == undefined || targetUserId == null || targetUserId == '')
+                        {
+                            //setup for testing
+                            targetUserId = userInfo.id;
+                        }
+                        // ...
+                        callback(null,conn);
                     }
                  
                 });

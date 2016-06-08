@@ -1,6 +1,6 @@
 var validversions = [];
 validversions.push('1');
-var myversion ='1';// getParameterByNameUniquelfw('version');
+var myversion ='1';
 var mysessionId = '';
 var myloginurl = '';
 var myusername = '';
