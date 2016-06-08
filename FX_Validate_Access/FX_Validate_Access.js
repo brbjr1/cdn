@@ -5,6 +5,7 @@ var mysessionId = '';
 var myloginurl = '';
 var myusername = '';
 var mypassword = '';
+var myuserid = '';
 var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/';
 
 
@@ -53,6 +54,7 @@ if (myscripturl != '')
 	myloginurl = getScriptParameterByNameUniquelfw('lurl',myscripturl);
 	myusername = getScriptParameterByNameUniquelfw('luser',myscripturl);
 	mypassword = getScriptParameterByNameUniquelfw('lpass',myscripturl);
+	myuserid = getScriptParameterByNameUniquelfw('myuserid',myscripturl); 
 
 }
 

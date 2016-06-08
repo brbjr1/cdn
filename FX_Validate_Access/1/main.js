@@ -1,7 +1,7 @@
 
         var j$ = jQuery.noConflict();
         var RemoteGetObjectInfoResult;
-        var myuserId = '';
+        var targetUserId = '';
         //var mysessionId = getParameterByName('sessionId');
        // var scripts = document.getElementsByTagName("script");
        // console.log(scripts);
@@ -146,7 +146,7 @@
         j$(document).ready(function()
         {
             var finalresult = {FXObjects:[],FXRelatedObjects:[],PermissionSets:[],PackageLicense:[],ApexClassAccess:[],VFPageAccess:[],SystemPermissions:[]};
-            myuserId = getParameterByName('id');
+            targetUserId = getParameterByName('id');
             dojforcelogin(mysessionId, myloginurl,myusername,mypassword, function(loginerr, conn)
             {
                 try
@@ -161,13 +161,13 @@
                         try
                         {
 
-                            if (myuserId == undefined || myuserId == null || myuserId == '')
+                            if (targetUserId == undefined || targetUserId == null || targetUserId == '')
                             {
                                 ProcessError('Id not found'); 
                             }
                             else
                             {
-                                CurrentUserHasModifyAllDataAccess(conn,function(err, hasaccessresult)
+                                CurrentUserHasModifyAllDataAccess(conn,function(err,myuserid, hasaccessresult)
                                 {
                                     try
                                     {
@@ -213,7 +213,7 @@
                                                                         }
 
                                                                         var myUser;
-                                                                        var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.UserLicense.Name " + userprofilefields +" from User where id ='" + myuserId + "'";
+                                                                        var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.UserLicense.Name " + userprofilefields +" from User where id ='" + targetUserId + "'";
                                                                         QueryRecords(conn,myquery,function(UserQueryResults)
                                                                         {
                                                                             try
@@ -255,7 +255,7 @@
                                                                                                     }
                                                                                                     permissionsetfields += myfield.name;  
                                                                                                 }
-                                                                                                myquery = "select "+ permissionsetfields +" from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '" + myuserId + "')";
+                                                                                                myquery = "select "+ permissionsetfields +" from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '" + targetUserId + "')";
                                                                                                 QueryRecords(conn,myquery,function(PermissionSetQueryResults)
                                                                                                 {
                                                                                                     try
@@ -486,7 +486,7 @@
                                                                                                                                                             }
                                                                                                                                                         }
 
-                                                                                                                                                        myquery = "SELECT Id, Status, IsProvisioned, AllowedLicenses, UsedLicenses, ExpirationDate, CreatedDate, LastModifiedDate, SystemModstamp, NamespacePrefix FROM PackageLicense where NamespacePrefix in('FXMAP','FXJSD','FXTKT','FX5','FXCPQ') and Id in (SELECT  PackageLicenseId FROM UserPackageLicense where UserId ='" + myuserId + "')";
+                                                                                                                                                        myquery = "SELECT Id, Status, IsProvisioned, AllowedLicenses, UsedLicenses, ExpirationDate, CreatedDate, LastModifiedDate, SystemModstamp, NamespacePrefix FROM PackageLicense where NamespacePrefix in('FXMAP','FXJSD','FXTKT','FX5','FXCPQ') and Id in (SELECT  PackageLicenseId FROM UserPackageLicense where UserId ='" + targetUserId + "')";
                                                                                                                                                         QueryRecords(conn,myquery,function(PackageLicenseQueryResults)
                                                                                                                                                         {
                                                                                                                                                             try
@@ -770,9 +770,9 @@
             }
         }
 
-        function CurrentUserHasModifyAllDataAccess(conn, callback)
+        function CurrentUserHasModifyAllDataAccess(conn, tid callback)
         {
-            var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='"+myuserid+"'";
+            var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='"+tid+"'";
             var HasModifyAllDataAccess = false; // this is needed to access the metadata api
             QueryRecords(conn,myquery,function(UserQueryResults)
             {
@@ -788,7 +788,7 @@
                 }
                 else
                 {
-                    myquery = "select Id, PermissionsModifyAllData from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '"+myuserid+"')";
+                    myquery = "select Id, PermissionsModifyAllData from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '"+tid+"')";
                     QueryRecords(conn,myquery,function(PermissionSetQueryResults)
                     {
                         if (PermissionSetQueryResults.error)
