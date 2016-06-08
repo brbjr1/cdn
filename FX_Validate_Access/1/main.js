@@ -3,6 +3,8 @@
         var RemoteGetObjectInfoResult;
         var myuserId = '';
         var mysessionId = getParameterByName('sessionId');
+        var scripts = document.getElementsByTagName("script");
+        console.log(scripts);
 
         function getParameterByName(name) 
         {
