@@ -741,7 +741,7 @@
             {
                 conn = new jsforce.Connection({
                   // you can change loginUrl to connect to sandbox or prerelease env.
-                   loginUrl : myloginurl
+                   loginUrl : myloginurl,version:'36.0'
                 });
                 conn.login(luser, lpass, function(err, userInfo) 
                 {

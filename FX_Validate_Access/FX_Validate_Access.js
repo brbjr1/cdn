@@ -5,7 +5,7 @@ var mysessionId = '';
 var myloginurl = '';
 var myusername = '';
 var mypassword = '';
-var mycdnurl = 'https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/';
+var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/';
 
 
 var scripts = document.getElementsByTagName("script");
