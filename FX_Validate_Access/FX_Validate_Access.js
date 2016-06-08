@@ -10,20 +10,22 @@ if (myversion == undefined || myversion.length == 0 ||  validversions.indexOf(my
 }
 
 var isProd = 'cdn.';
+var scrsuffix = '';
 if (getParameterByNameUniquelfw('isprod') == '0')
 {
 	isProd = '';
+	scrsuffix = 'rand=' + makeid();
 }
 
 var loadurls = [];
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js',type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css',type:'css'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js',type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css',type:'css'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js',type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js',type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js',type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/xml2json.min.js',type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css?' + scrsuffix,type:'css'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css?' + scrsuffix,type:'css'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/xml2json.min.js?' + scrsuffix,type:'js'});
 
 loadresourcesinorder(loadurls, function()
 {
@@ -31,7 +33,7 @@ loadresourcesinorder(loadurls, function()
 
 	j2$(document).ready(function()
 	{
-		j2$( "#MainContent" ).load( 'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.htm',  function( response, status, xhr ) 
+		j2$( "#MainContent" ).load( 'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.htm?' + scrsuffix,  function( response, status, xhr ) 
 		{
 			if ( status == "error" ) 
 			{
@@ -40,7 +42,7 @@ loadresourcesinorder(loadurls, function()
 			}
 			else
 			{
-				loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.js','js');
+				loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.js?' + scrsuffix,'js');
 			}
 		});
 	});
@@ -80,6 +82,18 @@ requireUniquelfw('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Acc
 
 });
 */
+
+
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
 
 function loadresourcesinorder(urls, callback)
 {
