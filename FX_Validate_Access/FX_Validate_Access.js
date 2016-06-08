@@ -1,31 +1,78 @@
-
-var myversion = getParameterByNameUniquelfw('version');
-
 var validversions = [];
 validversions.push('1');
+var myversion ='1';// getParameterByNameUniquelfw('version');
+var mysessionId = '';
+var myloginurl = '';
+var myusername = '';
+var mypassword = '';
+var mycdnurl = 'https://cdn.rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/';
 
-if (myversion == undefined || myversion.length == 0 ||  validversions.indexOf(myversion) < 0)
-{
-	myversion = 1
+
+var scripts = document.getElementsByTagName("script");
+var myscripturl = '';
+if (scripts)
+{ 
+	for(var ip1=0; ip1 < scripts.length; ip1++ )
+	{
+		var scr1 = scripts[ip1].src;
+		if (scr1 != undefined && scr1.includes('FX_Validate_Access'))
+		{
+			myscripturl = scr1;
+			break;
+		}
+	}
 }
 
-var isProd = 'cdn.';
-var scrsuffix = '';
-if (getParameterByNameUniquelfw('isprod') == '0')
+var israndom = false;
+if (myscripturl != '')
 {
-	isProd = '';
+	var scrversion = getScriptParameterByNameUniquelfw('version',myscripturl);
+	var scrcdn = getScriptParameterByNameUniquelfw('cdnurl',myscripturl);
+	//var scrsessionid = getScriptParameterByNameUniquelfw('sessionid',myscripturl);
+	var scrisrandom = getScriptParameterByNameUniquelfw('israndom',myscripturl);
+	if (scrversion != null && scrversion.length > 0 &&  validversions.indexOf(scrversion) > 0)
+	{
+		myversion = scrversion;
+	}
+	if (scrcdn != null)
+	{
+		mycdnurl = scrcdn;
+		hascustoncdn = true;
+		console.log('using custom sdnurl:' + mycdnurl);
+	}
+	//if (scrsessionid != null)
+	//{
+	//	mysessionId = scrsessionid;
+	//}
+	if (scrisrandom != null)
+	{
+		israndom = scrisrandom == '1';
+	}
+
+	mysessionId = getScriptParameterByNameUniquelfw('sessionid',myscripturl);
+	myloginurl = getScriptParameterByNameUniquelfw('lurl',myscripturl);
+	myusername = getScriptParameterByNameUniquelfw('luser',myscripturl);
+	mypassword = getScriptParameterByNameUniquelfw('lpass',myscripturl);
+
+}
+
+var scrsuffix = '';
+if (israndom == true)
+{
 	scrsuffix = 'rand=' + makeid();
 }
 
+//console.log(scripts);
+
 var loadurls = [];
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/jquery-2.1.4/jquery-2.1.4.min.js?' + scrsuffix,type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/css/bootstrap.min.css?' + scrsuffix,type:'css'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/Bootstrap_v3.3.6/js/bootstrap.min.js?' + scrsuffix,type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/css/jquery.dataTables.min.css?' + scrsuffix,type:'css'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/DataTables-1.10.11/media/js/jquery.dataTables.min.js?' + scrsuffix,type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jsforce.min.js?' + scrsuffix,type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/jszip.min.js?' + scrsuffix,type:'js'});
-loadurls.push({url:'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/js/xml2json.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:mycdnurl + 'jquery-2.1.4/jquery-2.1.4.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:mycdnurl + 'Bootstrap_v3.3.6/css/bootstrap.min.css?' + scrsuffix,type:'css'});
+loadurls.push({url:mycdnurl + 'Bootstrap_v3.3.6/js/bootstrap.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:mycdnurl + 'DataTables-1.10.11/media/css/jquery.dataTables.min.css?' + scrsuffix,type:'css'});
+loadurls.push({url:mycdnurl + 'DataTables-1.10.11/media/js/jquery.dataTables.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:mycdnurl + 'js/jsforce.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:mycdnurl + 'js/jszip.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:mycdnurl + 'js/xml2json.min.js?' + scrsuffix,type:'js'});
 
 loadresourcesinorder(loadurls, function()
 {
@@ -33,7 +80,7 @@ loadresourcesinorder(loadurls, function()
 
 	j2$(document).ready(function()
 	{
-		j2$( "#MainContent" ).load( 'https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.htm?' + scrsuffix,  function( response, status, xhr ) 
+		j2$( "#MainContent" ).load( mycdnurl + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 
 		{
 			if ( status == "error" ) 
 			{
@@ -42,7 +89,7 @@ loadresourcesinorder(loadurls, function()
 			}
 			else
 			{
-				loadjscssfile('https://'+isProd+'rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/main.js?' + scrsuffix,'js');
+				loadjscssfile(mycdnurl + 'main.js?' + scrsuffix,'js');
 			}
 		});
 	});
@@ -116,6 +163,14 @@ function loadresourcesinorder(urls, callback)
 
 }
 
+function getScriptParameterByNameUniquelfw(name, scr) 
+{
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(scr);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 
 
 function getParameterByNameUniquelfw(name) 
@@ -123,7 +178,7 @@ function getParameterByNameUniquelfw(name)
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 function loadjscssfile(filename, filetype){

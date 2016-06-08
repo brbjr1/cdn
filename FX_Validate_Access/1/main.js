@@ -2,10 +2,10 @@
         var j$ = jQuery.noConflict();
         var RemoteGetObjectInfoResult;
         var myuserId = '';
-        var mysessionId = getParameterByName('sessionId');
-        var scripts = document.getElementsByTagName("script");
-        console.log(scripts);
-
+        //var mysessionId = getParameterByName('sessionId');
+       // var scripts = document.getElementsByTagName("script");
+       // console.log(scripts);
+     //  alert(mycdnurl);
         function getParameterByName(name) 
         {
             name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -145,47 +145,46 @@
 
         j$(document).ready(function()
         {
-            var conn = new jsforce.Connection({accessToken : mysessionId});
             var finalresult = {FXObjects:[],FXRelatedObjects:[],PermissionSets:[],PackageLicense:[],ApexClassAccess:[],VFPageAccess:[],SystemPermissions:[]};
-
             myuserId = getParameterByName('id');
-            try
+            dojforcelogin(mysessionId, myloginurl,myusername,mypassword, function(loginerr, conn)
             {
-
-                if (myuserId == undefined || myuserId == null || myuserId == '')
+                try
                 {
-                    ProcessError('Id not found'); 
-                }
-                else
-                {
-                    CurrentUserHasModifyAllDataAccess(conn,function(err, hasaccessresult)
+                    if (loginerr)
+                    {
+                        console.log(loginerr);
+                        ProcessError(loginerr);
+                    }
+                    else
                     {
                         try
                         {
-                            if(err)
+
+                            if (myuserId == undefined || myuserId == null || myuserId == '')
                             {
-                                ProcessError(err);
+                                ProcessError('Id not found'); 
                             }
                             else
                             {
-                                if (hasaccessresult == false)
+                                CurrentUserHasModifyAllDataAccess(conn,function(err, hasaccessresult)
                                 {
-                                    ProcessError('Error: You must have permission Modify All Data to use this page!');
-                                }
-                                else
-                                {
-
-                                    conn.sobject("Profile").describe(function(err, Profilemeta) 
+                                    try
                                     {
-                                        try
+                                        if(err)
                                         {
-                                            if (err) 
-                                            { 
-                                                ProcessError(err); 
+                                            ProcessError(err);
+                                        }
+                                        else
+                                        {
+                                            if (hasaccessresult == false)
+                                            {
+                                                ProcessError('Error: You must have permission Modify All Data to use this page!');
                                             }
                                             else
                                             {
-                                                conn.sobject("PermissionSet").describe(function(err, Permissionsetmeta) 
+
+                                                conn.sobject("Profile").describe(function(err, Profilemeta) 
                                                 {
                                                     try
                                                     {
@@ -195,367 +194,336 @@
                                                         }
                                                         else
                                                         {
-                                                            //console.log(Profilemeta);
-                                                            var userprofilefields = '';
-                                                            for (var i=0; i < Profilemeta.fields.length; i++) 
-                                                            {
-                                                                var myfield = Profilemeta.fields[i];
-                                                                userprofilefields += ', Profile.' + myfield.name;  
-                                                            }
-
-                                                            var myUser;
-                                                            var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.UserLicense.Name " + userprofilefields +" from User where id ='" + myuserId + "'";
-                                                            QueryRecords(conn,myquery,function(UserQueryResults)
+                                                            conn.sobject("PermissionSet").describe(function(err, Permissionsetmeta) 
                                                             {
                                                                 try
                                                                 {
-                                                                    if (UserQueryResults.error)
-                                                                    {
-                                                                        ProcessError('Error:' + UserQueryResults.error);
+                                                                    if (err) 
+                                                                    { 
+                                                                        ProcessError(err); 
                                                                     }
                                                                     else
                                                                     {
-                                                                        finalresult.Userdetail = UserQueryResults.results[0];
-                                                                        myUser = UserQueryResults.results[0];
-                                                                        var searchids = "'"+myUser.ProfileId+"'";
-                                                                        var searchprofilename = myUser.Profile.Name;
-                                                                        var searchPermissionSetnames = [];
-                                                                        var searchObjects = [];
-                                                                        var perms = new HashTable();
-                                                                        myquery = "Select Id from PermissionSet where ProfileId = '"+ myUser.ProfileId +"'";
-                                                                        QueryRecords(conn,myquery,function(ProfilePermissionSetQueryResults)
+                                                                        //console.log(Profilemeta);
+                                                                        var userprofilefields = '';
+                                                                        for (var i=0; i < Profilemeta.fields.length; i++) 
+                                                                        {
+                                                                            var myfield = Profilemeta.fields[i];
+                                                                            userprofilefields += ', Profile.' + myfield.name;  
+                                                                        }
+
+                                                                        var myUser;
+                                                                        var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.UserLicense.Name " + userprofilefields +" from User where id ='" + myuserId + "'";
+                                                                        QueryRecords(conn,myquery,function(UserQueryResults)
                                                                         {
                                                                             try
                                                                             {
-                                                                                if (ProfilePermissionSetQueryResults.error)
+                                                                                if (UserQueryResults.error)
                                                                                 {
-                                                                                    ProcessError('Error:' + ProfilePermissionSetQueryResults.error);
+                                                                                    ProcessError('Error:' + UserQueryResults.error);
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    var ProfilePermissionSetId = ProfilePermissionSetQueryResults.results[0].Id;
-                                                                                    searchids += ",'"+ ProfilePermissionSetId +"'";
-
-                                                                                    var permissionsetfields = '';
-                                                                                    for (var i=0; i < Permissionsetmeta.fields.length; i++) 
-                                                                                    {
-                                                                                        var myfield = Permissionsetmeta.fields[i];
-                                                                                        if (permissionsetfields != '')
-                                                                                        {
-                                                                                            permissionsetfields += ',';
-                                                                                        }
-                                                                                        permissionsetfields += myfield.name;  
-                                                                                    }
-                                                                                    myquery = "select "+ permissionsetfields +" from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '" + myuserId + "')";
-                                                                                    QueryRecords(conn,myquery,function(PermissionSetQueryResults)
+                                                                                    finalresult.Userdetail = UserQueryResults.results[0];
+                                                                                    myUser = UserQueryResults.results[0];
+                                                                                    var searchids = "'"+myUser.ProfileId+"'";
+                                                                                    var searchprofilename = myUser.Profile.Name;
+                                                                                    var searchPermissionSetnames = [];
+                                                                                    var searchObjects = [];
+                                                                                    var perms = new HashTable();
+                                                                                    myquery = "Select Id from PermissionSet where ProfileId = '"+ myUser.ProfileId +"'";
+                                                                                    QueryRecords(conn,myquery,function(ProfilePermissionSetQueryResults)
                                                                                     {
                                                                                         try
                                                                                         {
-                                                                                            if (PermissionSetQueryResults.error)
+                                                                                            if (ProfilePermissionSetQueryResults.error)
                                                                                             {
-                                                                                                ProcessError('Error:' + PermissionSetQueryResults.error);
+                                                                                                ProcessError('Error:' + ProfilePermissionSetQueryResults.error);
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                //console.log(PermissionSetQueryResults);
-                                                                                                if (PermissionSetQueryResults.results != undefined)
-                                                                                                {
-                                                                                                    for (var i=0; i < PermissionSetQueryResults.results.length; i++) 
-                                                                                                    {
-                                                                                                        var QueryResult = PermissionSetQueryResults.results[i];
-                                                                                                        var mypermname = (QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '' ) + QueryResult.Name;
-                                                                                                        searchPermissionSetnames.push(mypermname);
-                                                                                                        searchids += ",'"+ QueryResult.Id +"'";
-                                                                                                        perms.setItem(QueryResult.Id,QueryResult);
-                                                                                                        var psinfo = {Name:mypermname,Label:QueryResult.Label,Description:(QueryResult.Description != undefined && QueryResult.Description != null ? QueryResult.Description : ''),Id:QueryResult.Id};
-                                                                                                        finalresult.PermissionSets.push(psinfo);
-                                                                                                    }
-                                                                                                }
+                                                                                                var ProfilePermissionSetId = ProfilePermissionSetQueryResults.results[0].Id;
+                                                                                                searchids += ",'"+ ProfilePermissionSetId +"'";
 
-                                                                                                for (var i=0; i < Profilemeta.fields.length; i++) 
+                                                                                                var permissionsetfields = '';
+                                                                                                for (var i=0; i < Permissionsetmeta.fields.length; i++) 
                                                                                                 {
-                                                                                                    var myfield = Profilemeta.fields[i];
-                                                                                                    if (myfield.name.startsWith('Permissions'))
+                                                                                                    var myfield = Permissionsetmeta.fields[i];
+                                                                                                    if (permissionsetfields != '')
                                                                                                     {
-                                                                                                        var si = {GrantedBy:[],HasAccess:false,Label:myfield.label,Name:myfield.name};
-                                                                                                        var panswer = myUser.Profile[myfield.name];
-                                                                                                        if (panswer != undefined && panswer == true)
-                                                                                                        {
-                                                                                                            si.HasAccess = true;
-                                                                                                            si.GrantedBy.push({Id:myUser.Profile.Id,IsProfile:true,Name:myUser.Profile.Name});
-                                                                                                        }
-                                                                                                        if (PermissionSetQueryResults.results != undefined)
-                                                                                                        {
-                                                                                                            for (var i2=0; i2 < PermissionSetQueryResults.results.length; i2++) 
-                                                                                                            {
-                                                                                                                var permsetresult = PermissionSetQueryResults.results[i2];
-                                                                                                                var psanswer = permsetresult[myfield.name];
-                                                                                                                if (psanswer != undefined && psanswer == true)
-                                                                                                                {
-                                                                                                                    si.HasAccess = true;
-                                                                                                                    si.GrantedBy.push({Id:permsetresult.Id,IsProfile:false,Name:permsetresult.Name});
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }
-                                                                                                        finalresult.SystemPermissions.push(si);
+                                                                                                        permissionsetfields += ',';
                                                                                                     }
+                                                                                                    permissionsetfields += myfield.name;  
                                                                                                 }
-                                                                                                
-                                                                                                DescribeAllSObjects(conn, function(DescribeAllSObjectserr, DescribeAllSObjectsResult)
+                                                                                                myquery = "select "+ permissionsetfields +" from PermissionSet where IsOwnedByProfile = false and Id in (SELECT PermissionSetId FROM PermissionSetAssignment where AssigneeId = '" + myuserId + "')";
+                                                                                                QueryRecords(conn,myquery,function(PermissionSetQueryResults)
                                                                                                 {
                                                                                                     try
                                                                                                     {
-
-                                                                                                        if (DescribeAllSObjectserr)
+                                                                                                        if (PermissionSetQueryResults.error)
                                                                                                         {
-                                                                                                            console.log('Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
-                                                                                                           // alert( 'Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
+                                                                                                            ProcessError('Error:' + PermissionSetQueryResults.error);
                                                                                                         }
-                                                                                                    
-                                                                                                        //console.log(DescribeAllSObjectsResult);
-                                                                                                        var MasterDetailChildParentRelationships  = new HashTable();
-                                                                                                        var SobjectHT = new HashTable();
-                                                                                                        var RelatedFXObjectsHT = new HashTable();
-                                                                                                        j$.each(DescribeAllSObjectsResult, function (index, item) 
+                                                                                                        else
                                                                                                         {
-                                                                                                            var sobjecttype = item.fullName;
-                                                                                                            if (sobjecttype.toLowerCase().startsWith('fx5__') || sobjecttype.toLowerCase().startsWith('fxt2__') || sobjecttype =='Account' || sobjecttype =='Contact' || sobjecttype =='User' )
+                                                                                                            //console.log(PermissionSetQueryResults);
+                                                                                                            if (PermissionSetQueryResults.results != undefined)
                                                                                                             {
-                                                                                                                RelatedFXObjectsHT.setItem(sobjecttype, item);
-                                                                                                                var fieldresults = getfieldResults(item);
-                                                                                                                var s1 = {APIName:sobjecttype,HasCreate:false,HasCreateGrantedBy:[],HasDelete:false,HasDeleteGrantedBy:[],HasEdit:false,HasEditGrantedBy:[],HasModifyAll:false,HasModifyAllGrantedBy:[],HasRead:false,HasReadGrantedBy:[],HasViewAll:false,HasViewAllGrantedBy:[],Label:item.label,OneFieldIsPermissionable:true,fields:fieldresults,isCustom:false,isCustomSetting:false};
-                                                                                                                finalresult.FXObjects.push(s1);
-                                                                                                                searchObjects.push(sobjecttype);
-                                                                                                            }
-                                                                                                            SobjectHT.setItem(sobjecttype, item);
-                                                                                                            var myparents = [];
-                                                                                                            var myfields = GetDescribeSObjectField(item.fields);
-                                                                                                            for (var i=0; i < myfields.length; i++) 
-                                                                                                            {
-                                                                                                                var field = myfields[i];
-                                                                                                                if (field.type == 'MasterDetail' || field.type == 'Lookup' && field.referenceTo != undefined)
+                                                                                                                for (var i=0; i < PermissionSetQueryResults.results.length; i++) 
                                                                                                                 {
-                                                                                                                    if (myparents.indexOf(field.referenceTo) < 0)
+                                                                                                                    var QueryResult = PermissionSetQueryResults.results[i];
+                                                                                                                    var mypermname = (QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '' ) + QueryResult.Name;
+                                                                                                                    searchPermissionSetnames.push(mypermname);
+                                                                                                                    searchids += ",'"+ QueryResult.Id +"'";
+                                                                                                                    perms.setItem(QueryResult.Id,QueryResult);
+                                                                                                                    var psinfo = {Name:mypermname,Label:QueryResult.Label,Description:(QueryResult.Description != undefined && QueryResult.Description != null ? QueryResult.Description : ''),Id:QueryResult.Id};
+                                                                                                                    finalresult.PermissionSets.push(psinfo);
+                                                                                                                }
+                                                                                                            }
+
+                                                                                                            for (var i=0; i < Profilemeta.fields.length; i++) 
+                                                                                                            {
+                                                                                                                var myfield = Profilemeta.fields[i];
+                                                                                                                if (myfield.name.startsWith('Permissions'))
+                                                                                                                {
+                                                                                                                    var si = {GrantedBy:[],HasAccess:false,Label:myfield.label,Name:myfield.name};
+                                                                                                                    var panswer = myUser.Profile[myfield.name];
+                                                                                                                    if (panswer != undefined && panswer == true)
                                                                                                                     {
-                                                                                                                        myparents.push(field.referenceTo);
+                                                                                                                        si.HasAccess = true;
+                                                                                                                        si.GrantedBy.push({Id:myUser.Profile.Id,IsProfile:true,Name:myUser.Profile.Name});
                                                                                                                     }
+                                                                                                                    if (PermissionSetQueryResults.results != undefined)
+                                                                                                                    {
+                                                                                                                        for (var i2=0; i2 < PermissionSetQueryResults.results.length; i2++) 
+                                                                                                                        {
+                                                                                                                            var permsetresult = PermissionSetQueryResults.results[i2];
+                                                                                                                            var psanswer = permsetresult[myfield.name];
+                                                                                                                            if (psanswer != undefined && psanswer == true)
+                                                                                                                            {
+                                                                                                                                si.HasAccess = true;
+                                                                                                                                si.GrantedBy.push({Id:permsetresult.Id,IsProfile:false,Name:permsetresult.Name});
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                    finalresult.SystemPermissions.push(si);
                                                                                                                 }
                                                                                                             }
-                                                                                                            if (myparents.length > 0)
+                                                                                                            
+                                                                                                            DescribeAllSObjects(conn, function(DescribeAllSObjectserr, DescribeAllSObjectsResult)
                                                                                                             {
-                                                                                                                MasterDetailChildParentRelationships.setItem(sobjecttype, myparents);
-                                                                                                            }
-                                                                                                        });
+                                                                                                                try
+                                                                                                                {
 
-                                                                                                        //console.log(MasterDetailChildParentRelationships);
-                                                                                                        var RelatedFXObjectNames = [];
-                                                                                                        for (var i=0; i < RelatedFXObjectsHT.keys.length; i++) 
-                                                                                                        {
-                                                                                                            var mykey = RelatedFXObjectsHT.keys[i];
-                                                                                                            var parentname = RelatedFXObjectsHT.getItem(mykey);
-                                                                                                            getRelatedObjects(RelatedFXObjectNames, parentname.fullName, MasterDetailChildParentRelationships);
-                                                                                                        }
-                                                                                                        //console.log(RelatedFXObjectNames);
-                                                                                                        
-                                                                                                        for (var i=0; i < RelatedFXObjectNames.length; i++) 
-                                                                                                        {
-                                                                                                            var RelatedFXObjectName = RelatedFXObjectNames[i];
-                                                                                                            if (SobjectHT.hasItem(RelatedFXObjectName))
-                                                                                                            {
-                                                                                                                var item = SobjectHT.getItem(RelatedFXObjectName);
-                                                                                                                var sobjecttype = item.fullName;
-                                                                                                                if (sobjecttype != undefined && RelatedFXObjectsHT.hasItem(sobjecttype) == false)
-                                                                                                                {
-                                                                                                                    searchObjects.push(sobjecttype);
-                                                                                                                    var fieldresults = getfieldResults(item);
-                                                                                                                    var s1 = {APIName:sobjecttype,HasCreate:false,HasCreateGrantedBy:[],HasDelete:false,HasDeleteGrantedBy:[],HasEdit:false,HasEditGrantedBy:[],HasModifyAll:false,HasModifyAllGrantedBy:[],HasRead:false,HasReadGrantedBy:[],HasViewAll:false,HasViewAllGrantedBy:[],Label:item.label,OneFieldIsPermissionable:true,fields:fieldresults,isCustom:false,isCustomSetting:false};
-                                                                                                                    finalresult.FXRelatedObjects.push(s1);
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }
-                                                                                                        
-                                                                                                        var mypackage = {'types':[],'version':'36.0'};
-                                                                                                        mypackage.types.push({'members':MetaDataApiName(searchprofilename),'name':'Profile'});
-                                                                                                        mypackage.types.push({'members':'*','name':'CustomField'});
-                                                                                                        mypackage.types.push({'members':searchObjects,'name':'CustomObject'});
-                                                                                                        if (searchPermissionSetnames.length > 0)
-                                                                                                        {
-                                                                                                            mypackage.types.push({'members':searchPermissionSetnames,'name':'PermissionSet'});
-                                                                                                        }
-                                                                                                        //var conn3 = new jsforce.Connection({accessToken : '{!$Api.Session_ID}'});
-                                                                                                        conn.metadata.retrieve({unpackaged: mypackage}, function(retreiveerr, retreivemetadata) 
-                                                                                                        {
-                                                                                                            try
-                                                                                                            {
-                                                                                                                if (retreiveerr) 
-                                                                                                                { 
-                                                                                                                     ProcessError(retreiveerr); 
-                                                                                                                }
-                                                                                                                else
-                                                                                                                {
-                                                                                                                    DocheckRetrieveStatus(conn,retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult) 
+                                                                                                                    if (DescribeAllSObjectserr)
+                                                                                                                    {
+                                                                                                                        console.log('Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
+                                                                                                                       // alert( 'Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
+                                                                                                                    }
+                                                                                                                
+                                                                                                                    //console.log(DescribeAllSObjectsResult);
+                                                                                                                    var MasterDetailChildParentRelationships  = new HashTable();
+                                                                                                                    var SobjectHT = new HashTable();
+                                                                                                                    var RelatedFXObjectsHT = new HashTable();
+                                                                                                                    j$.each(DescribeAllSObjectsResult, function (index, item) 
+                                                                                                                    {
+                                                                                                                        var sobjecttype = item.fullName;
+                                                                                                                        if (sobjecttype.toLowerCase().startsWith('fx5__') || sobjecttype.toLowerCase().startsWith('fxt2__') || sobjecttype =='Account' || sobjecttype =='Contact' || sobjecttype =='User' )
+                                                                                                                        {
+                                                                                                                            RelatedFXObjectsHT.setItem(sobjecttype, item);
+                                                                                                                            var fieldresults = getfieldResults(item);
+                                                                                                                            var s1 = {APIName:sobjecttype,HasCreate:false,HasCreateGrantedBy:[],HasDelete:false,HasDeleteGrantedBy:[],HasEdit:false,HasEditGrantedBy:[],HasModifyAll:false,HasModifyAllGrantedBy:[],HasRead:false,HasReadGrantedBy:[],HasViewAll:false,HasViewAllGrantedBy:[],Label:item.label,OneFieldIsPermissionable:true,fields:fieldresults,isCustom:false,isCustomSetting:false};
+                                                                                                                            finalresult.FXObjects.push(s1);
+                                                                                                                            searchObjects.push(sobjecttype);
+                                                                                                                        }
+                                                                                                                        SobjectHT.setItem(sobjecttype, item);
+                                                                                                                        var myparents = [];
+                                                                                                                        var myfields = GetDescribeSObjectField(item.fields);
+                                                                                                                        for (var i=0; i < myfields.length; i++) 
+                                                                                                                        {
+                                                                                                                            var field = myfields[i];
+                                                                                                                            if (field.type == 'MasterDetail' || field.type == 'Lookup' && field.referenceTo != undefined)
+                                                                                                                            {
+                                                                                                                                if (myparents.indexOf(field.referenceTo) < 0)
+                                                                                                                                {
+                                                                                                                                    myparents.push(field.referenceTo);
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                        if (myparents.length > 0)
+                                                                                                                        {
+                                                                                                                            MasterDetailChildParentRelationships.setItem(sobjecttype, myparents);
+                                                                                                                        }
+                                                                                                                    });
+
+                                                                                                                    //console.log(MasterDetailChildParentRelationships);
+                                                                                                                    var RelatedFXObjectNames = [];
+                                                                                                                    for (var i=0; i < RelatedFXObjectsHT.keys.length; i++) 
+                                                                                                                    {
+                                                                                                                        var mykey = RelatedFXObjectsHT.keys[i];
+                                                                                                                        var parentname = RelatedFXObjectsHT.getItem(mykey);
+                                                                                                                        getRelatedObjects(RelatedFXObjectNames, parentname.fullName, MasterDetailChildParentRelationships);
+                                                                                                                    }
+                                                                                                                    //console.log(RelatedFXObjectNames);
+                                                                                                                    
+                                                                                                                    for (var i=0; i < RelatedFXObjectNames.length; i++) 
+                                                                                                                    {
+                                                                                                                        var RelatedFXObjectName = RelatedFXObjectNames[i];
+                                                                                                                        if (SobjectHT.hasItem(RelatedFXObjectName))
+                                                                                                                        {
+                                                                                                                            var item = SobjectHT.getItem(RelatedFXObjectName);
+                                                                                                                            var sobjecttype = item.fullName;
+                                                                                                                            if (sobjecttype != undefined && RelatedFXObjectsHT.hasItem(sobjecttype) == false)
+                                                                                                                            {
+                                                                                                                                searchObjects.push(sobjecttype);
+                                                                                                                                var fieldresults = getfieldResults(item);
+                                                                                                                                var s1 = {APIName:sobjecttype,HasCreate:false,HasCreateGrantedBy:[],HasDelete:false,HasDeleteGrantedBy:[],HasEdit:false,HasEditGrantedBy:[],HasModifyAll:false,HasModifyAllGrantedBy:[],HasRead:false,HasReadGrantedBy:[],HasViewAll:false,HasViewAllGrantedBy:[],Label:item.label,OneFieldIsPermissionable:true,fields:fieldresults,isCustom:false,isCustomSetting:false};
+                                                                                                                                finalresult.FXRelatedObjects.push(s1);
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                    
+                                                                                                                    var mypackage = {'types':[],'version':'36.0'};
+                                                                                                                    mypackage.types.push({'members':MetaDataApiName(searchprofilename),'name':'Profile'});
+                                                                                                                    mypackage.types.push({'members':'*','name':'CustomField'});
+                                                                                                                    mypackage.types.push({'members':searchObjects,'name':'CustomObject'});
+                                                                                                                    if (searchPermissionSetnames.length > 0)
+                                                                                                                    {
+                                                                                                                        mypackage.types.push({'members':searchPermissionSetnames,'name':'PermissionSet'});
+                                                                                                                    }
+                                                                                                                    //var conn3 = new jsforce.Connection({accessToken : '{!$Api.Session_ID}'});
+                                                                                                                    conn.metadata.retrieve({unpackaged: mypackage}, function(retreiveerr, retreivemetadata) 
                                                                                                                     {
                                                                                                                         try
                                                                                                                         {
-                                                                                                                            if (retreivemetadataresulterr) 
+                                                                                                                            if (retreiveerr) 
                                                                                                                             { 
-                                                                                                                                ProcessError(retreivemetadataresulterr); 
+                                                                                                                                 ProcessError(retreiveerr); 
                                                                                                                             }
                                                                                                                             else
                                                                                                                             {
-                                                                                                                                AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile,function(zipresultserr, zipresults)
+                                                                                                                                DocheckRetrieveStatus(conn,retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult) 
                                                                                                                                 {
                                                                                                                                     try
                                                                                                                                     {
-                                                                                                                                        if (zipresultserr) 
+                                                                                                                                        if (retreivemetadataresulterr) 
                                                                                                                                         { 
-                                                                                                                                            ProcessError(zipresultserr); 
+                                                                                                                                            ProcessError(retreivemetadataresulterr); 
                                                                                                                                         }
                                                                                                                                         else
                                                                                                                                         {
-                                                                                                                                            //console.log(zipresults);
-                                                                                                                                            //add results for profile
-                                                                                                                                            var profilepackagename = 'unpackaged/profiles/' + MetaDataApiName(searchprofilename).replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.profile';
-                                                                                                                                            if (zipresults.hasItem(profilepackagename) == true)
-                                                                                                                                            {
-                                                                                                                                                var mydetail = zipresults.getItem(profilepackagename);
-                                                                                                                                                if (mydetail.Profile.fieldPermissions != undefined)
-                                                                                                                                                {
-                                                                                                                                                    for (var i=0; i < mydetail.Profile.fieldPermissions.length; i++) 
-                                                                                                                                                    {
-                                                                                                                                                        var mypermission2 = mydetail.Profile.fieldPermissions[i];
-                                                                                                                                                        SetFeildResult(mypermission2,finalresult,searchprofilename,true);
-                                                                                                                                                    }
-                                                                                                                                                }
-                                                                                                                                                if (mydetail.Profile.objectPermissions != undefined)
-                                                                                                                                                {
-                                                                                                                                                    for (var i=0; i < mydetail.Profile.objectPermissions.length; i++) 
-                                                                                                                                                    {
-                                                                                                                                                        var mypermission2 = mydetail.Profile.objectPermissions[i];
-                                                                                                                                                        SetObjectResult(mypermission2,finalresult,searchprofilename,true);
-                                                                                                                                                    }
-                                                                                                                                                }
-                                                                                                                                            }
-                                                                                                                                            else
-                                                                                                                                            {
-                                                                                                                                                console.log('Error Metadata not found for ' + profilepackagename);
-                                                                                                                                                alert('Error 99908');
-                                                                                                                                            }
-
-                                                                                                                                            if (PermissionSetQueryResults.results != undefined)
-                                                                                                                                            {
-                                                                                                                                                for (var i=0; i < PermissionSetQueryResults.results.length; i++) 
-                                                                                                                                                {
-                                                                                                                                                    var QueryResult = PermissionSetQueryResults.results[i];
-                                                                                                                                                    var permname = (QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '' ) + QueryResult.Name;(QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '' ) + QueryResult.Name;
-                                                                                                                                                    var permpackagename = 'unpackaged/permissionsets/' + permname.replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.permissionset';
-                                                                                                                                                    if (zipresults.hasItem(permpackagename) == true)
-                                                                                                                                                    {
-                                                                                                                                                        var mydetail = zipresults.getItem(permpackagename);
-                                                                                                                                                        if (mydetail.PermissionSet.fieldPermissions != undefined)
-                                                                                                                                                        {
-                                                                                                                                                            for (var i2=0; i2 < mydetail.PermissionSet.fieldPermissions.length; i2++) 
-                                                                                                                                                            {
-                                                                                                                                                                var mypermission2 = mydetail.PermissionSet.fieldPermissions[i2];
-                                                                                                                                                                SetFeildResult(mypermission2,finalresult,QueryResult.Name,false);
-                                                                                                                                                            }
-                                                                                                                                                        }
-                                                                                                                                                        if (mydetail.PermissionSet.objectPermissions != undefined)
-                                                                                                                                                        {
-                                                                                                                                                            for (var i2=0; i2 < mydetail.PermissionSet.objectPermissions.length; i2++) 
-                                                                                                                                                            {
-                                                                                                                                                                var mypermission2 = mydetail.PermissionSet.objectPermissions[i2];
-                                                                                                                                                                SetObjectResult(mypermission2,finalresult,QueryResult.Name,false);
-                                                                                                                                                            }
-                                                                                                                                                        }
-                                                                                                                                                    }
-                                                                                                                                                    else
-                                                                                                                                                    {
-                                                                                                                                                        console.log('Error Metadata not found for ' + permpackagename);
-                                                                                                                                                        alert('Error 99909');
-                                                                                                                                                    }
-                                                                                                                                                }
-                                                                                                                                            }
-
-                                                                                                                                            myquery = "SELECT Id, Status, IsProvisioned, AllowedLicenses, UsedLicenses, ExpirationDate, CreatedDate, LastModifiedDate, SystemModstamp, NamespacePrefix FROM PackageLicense where NamespacePrefix in('FXMAP','FXJSD','FXTKT','FX5','FXCPQ') and Id in (SELECT  PackageLicenseId FROM UserPackageLicense where UserId ='" + myuserId + "')";
-                                                                                                                                            QueryRecords(conn,myquery,function(PackageLicenseQueryResults)
+                                                                                                                                            AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile,function(zipresultserr, zipresults)
                                                                                                                                             {
                                                                                                                                                 try
                                                                                                                                                 {
-                                                                                                                                                    if (PackageLicenseQueryResults.error)
-                                                                                                                                                    {
-                                                                                                                                                        ProcessError('Error:' + PackageLicenseQueryResults.error);
+                                                                                                                                                    if (zipresultserr) 
+                                                                                                                                                    { 
+                                                                                                                                                        ProcessError(zipresultserr); 
                                                                                                                                                     }
                                                                                                                                                     else
                                                                                                                                                     {
-                                                                                                                                                        if (PackageLicenseQueryResults.results != undefined)
+                                                                                                                                                        //console.log(zipresults);
+                                                                                                                                                        //add results for profile
+                                                                                                                                                        var profilepackagename = 'unpackaged/profiles/' + MetaDataApiName(searchprofilename).replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.profile';
+                                                                                                                                                        if (zipresults.hasItem(profilepackagename) == true)
                                                                                                                                                         {
-                                                                                                                                                            for (var i=0; i < PackageLicenseQueryResults.results.length; i++) 
+                                                                                                                                                            var mydetail = zipresults.getItem(profilepackagename);
+                                                                                                                                                            if (mydetail.Profile.fieldPermissions != undefined)
                                                                                                                                                             {
-                                                                                                                                                                var QueryResult = PackageLicenseQueryResults.results[i];
-                                                                                                                                                                var licinfo = {Name:GetLicenseName(QueryResult.NamespacePrefix),Id:QueryResult.Id};
-                                                                                                                                                                finalresult.PackageLicense.push(licinfo);
+                                                                                                                                                                for (var i=0; i < mydetail.Profile.fieldPermissions.length; i++) 
+                                                                                                                                                                {
+                                                                                                                                                                    var mypermission2 = mydetail.Profile.fieldPermissions[i];
+                                                                                                                                                                    SetFeildResult(mypermission2,finalresult,searchprofilename,true);
+                                                                                                                                                                }
+                                                                                                                                                            }
+                                                                                                                                                            if (mydetail.Profile.objectPermissions != undefined)
+                                                                                                                                                            {
+                                                                                                                                                                for (var i=0; i < mydetail.Profile.objectPermissions.length; i++) 
+                                                                                                                                                                {
+                                                                                                                                                                    var mypermission2 = mydetail.Profile.objectPermissions[i];
+                                                                                                                                                                    SetObjectResult(mypermission2,finalresult,searchprofilename,true);
+                                                                                                                                                                }
                                                                                                                                                             }
                                                                                                                                                         }
-                                                                                                                                                        var profileId = myUser.ProfileId;
-                                                                                                                                                        var profileName = myUser.Profile.Name;
-                                                                                                                                                        myquery = "SELECT Id, Name,NamespacePrefix,Status, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( "+ searchids +" )) FROM ApexClass";
-                                                                                                                                                        QueryRecords(conn,myquery,function(ApexClassQueryResults)
+                                                                                                                                                        else
                                                                                                                                                         {
-                                                                                                                                                            try
+                                                                                                                                                            console.log('Error Metadata not found for ' + profilepackagename);
+                                                                                                                                                            alert('Error 99908');
+                                                                                                                                                        }
+
+                                                                                                                                                        if (PermissionSetQueryResults.results != undefined)
+                                                                                                                                                        {
+                                                                                                                                                            for (var i=0; i < PermissionSetQueryResults.results.length; i++) 
                                                                                                                                                             {
-                                                                                                                                                                if (ApexClassQueryResults.error)
+                                                                                                                                                                var QueryResult = PermissionSetQueryResults.results[i];
+                                                                                                                                                                var permname = (QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '' ) + QueryResult.Name;(QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '' ) + QueryResult.Name;
+                                                                                                                                                                var permpackagename = 'unpackaged/permissionsets/' + permname.replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.permissionset';
+                                                                                                                                                                if (zipresults.hasItem(permpackagename) == true)
                                                                                                                                                                 {
-                                                                                                                                                                    ProcessError('Error:' + ApexClassQueryResults.error);
+                                                                                                                                                                    var mydetail = zipresults.getItem(permpackagename);
+                                                                                                                                                                    if (mydetail.PermissionSet.fieldPermissions != undefined)
+                                                                                                                                                                    {
+                                                                                                                                                                        for (var i2=0; i2 < mydetail.PermissionSet.fieldPermissions.length; i2++) 
+                                                                                                                                                                        {
+                                                                                                                                                                            var mypermission2 = mydetail.PermissionSet.fieldPermissions[i2];
+                                                                                                                                                                            SetFeildResult(mypermission2,finalresult,QueryResult.Name,false);
+                                                                                                                                                                        }
+                                                                                                                                                                    }
+                                                                                                                                                                    if (mydetail.PermissionSet.objectPermissions != undefined)
+                                                                                                                                                                    {
+                                                                                                                                                                        for (var i2=0; i2 < mydetail.PermissionSet.objectPermissions.length; i2++) 
+                                                                                                                                                                        {
+                                                                                                                                                                            var mypermission2 = mydetail.PermissionSet.objectPermissions[i2];
+                                                                                                                                                                            SetObjectResult(mypermission2,finalresult,QueryResult.Name,false);
+                                                                                                                                                                        }
+                                                                                                                                                                    }
                                                                                                                                                                 }
                                                                                                                                                                 else
                                                                                                                                                                 {
-                                                                                                                                                                    if (ApexClassQueryResults.results != undefined)
+                                                                                                                                                                    console.log('Error Metadata not found for ' + permpackagename);
+                                                                                                                                                                    alert('Error 99909');
+                                                                                                                                                                }
+                                                                                                                                                            }
+                                                                                                                                                        }
+
+                                                                                                                                                        myquery = "SELECT Id, Status, IsProvisioned, AllowedLicenses, UsedLicenses, ExpirationDate, CreatedDate, LastModifiedDate, SystemModstamp, NamespacePrefix FROM PackageLicense where NamespacePrefix in('FXMAP','FXJSD','FXTKT','FX5','FXCPQ') and Id in (SELECT  PackageLicenseId FROM UserPackageLicense where UserId ='" + myuserId + "')";
+                                                                                                                                                        QueryRecords(conn,myquery,function(PackageLicenseQueryResults)
+                                                                                                                                                        {
+                                                                                                                                                            try
+                                                                                                                                                            {
+                                                                                                                                                                if (PackageLicenseQueryResults.error)
+                                                                                                                                                                {
+                                                                                                                                                                    ProcessError('Error:' + PackageLicenseQueryResults.error);
+                                                                                                                                                                }
+                                                                                                                                                                else
+                                                                                                                                                                {
+                                                                                                                                                                    if (PackageLicenseQueryResults.results != undefined)
                                                                                                                                                                     {
-                                                                                                                                                                        for (var i=0; i < ApexClassQueryResults.results.length; i++) 
+                                                                                                                                                                        for (var i=0; i < PackageLicenseQueryResults.results.length; i++) 
                                                                                                                                                                         {
-                                                                                                                                                                            var QueryResult = ApexClassQueryResults.results[i];
-                                                                                                                                                                            var myname = (QueryResult.NamespacePrefix != null ? QueryResult.NamespacePrefix + '.' + QueryResult.Name : QueryResult.Name).replace(' ', '_');
-                                                                                                                                                                            var si = {GrantedBy:[],HasAccess:false,Label:myname,Name:myname};
-                                                                                                                                                                            if (QueryResult.SetupEntityAccessItems != undefined)
-                                                                                                                                                                            {
-                                                                                                                                                                                if (Array.isArray(QueryResult.SetupEntityAccessItems.records))
-                                                                                                                                                                                {
-                                                                                                                                                                                    for (var i2=0; i2 < QueryResult.SetupEntityAccessItems.records.length; i2++) 
-                                                                                                                                                                                    {
-                                                                                                                                                                                        var sa = QueryResult.SetupEntityAccessItems.records[i2];
-                                                                                                                                                                                        si.HasAccess = true;
-                                                                                                                                                                                        var myid = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileId : sa.ParentId;
-                                                                                                                                                                                        var isprofile  =sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ;
-                                                                                                                                                                                        var myparentname = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileName : perms.getItem(sa.ParentId).Name;
-                                                                                                                                                                                        si.GrantedBy.push({Id:myid,IsProfile:isprofile,Name:myparentname});
-                                                                                                                                                                                    }
-                                                                                                                                                                                }
-                                                                                                                                                                                else
-                                                                                                                                                                                {
-                                                                                                                                                                                    Alert('Error 99901');
-                                                                                                                                                                                }
-                                                                                                                                                                            }
-                                                                                                                                                                            finalresult.ApexClassAccess.push(si);
+                                                                                                                                                                            var QueryResult = PackageLicenseQueryResults.results[i];
+                                                                                                                                                                            var licinfo = {Name:GetLicenseName(QueryResult.NamespacePrefix),Id:QueryResult.Id};
+                                                                                                                                                                            finalresult.PackageLicense.push(licinfo);
                                                                                                                                                                         }
                                                                                                                                                                     }
-                                                                                                                                                                    
-                                                                                                                                                                    myquery = "SELECT Id, Name,NamespacePrefix,MasterLabel, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( "+ searchids +" )) FROM ApexPage";
-                                                                                                                                                                    QueryRecords(conn,myquery,function(ApexPageQueryResults)
+                                                                                                                                                                    var profileId = myUser.ProfileId;
+                                                                                                                                                                    var profileName = myUser.Profile.Name;
+                                                                                                                                                                    myquery = "SELECT Id, Name,NamespacePrefix,Status, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( "+ searchids +" )) FROM ApexClass";
+                                                                                                                                                                    QueryRecords(conn,myquery,function(ApexClassQueryResults)
                                                                                                                                                                     {
                                                                                                                                                                         try
                                                                                                                                                                         {
-                                                                                                                                                                            if (ApexPageQueryResults.error)
+                                                                                                                                                                            if (ApexClassQueryResults.error)
                                                                                                                                                                             {
-                                                                                                                                                                                ProcessError('Error:' + ApexPageQueryResults.error);
+                                                                                                                                                                                ProcessError('Error:' + ApexClassQueryResults.error);
                                                                                                                                                                             }
                                                                                                                                                                             else
                                                                                                                                                                             {
-                                                                                                                                                                                if (ApexPageQueryResults.results != undefined)
+                                                                                                                                                                                if (ApexClassQueryResults.results != undefined)
                                                                                                                                                                                 {
-                                                                                                                                                                                    for (var i=0; i < ApexPageQueryResults.results.length; i++) 
+                                                                                                                                                                                    for (var i=0; i < ApexClassQueryResults.results.length; i++) 
                                                                                                                                                                                     {
-                                                                                                                                                                                        var QueryResult = ApexPageQueryResults.results[i];
+                                                                                                                                                                                        var QueryResult = ApexClassQueryResults.results[i];
                                                                                                                                                                                         var myname = (QueryResult.NamespacePrefix != null ? QueryResult.NamespacePrefix + '.' + QueryResult.Name : QueryResult.Name).replace(' ', '_');
                                                                                                                                                                                         var si = {GrantedBy:[],HasAccess:false,Label:myname,Name:myname};
                                                                                                                                                                                         if (QueryResult.SetupEntityAccessItems != undefined)
@@ -574,15 +542,65 @@
                                                                                                                                                                                             }
                                                                                                                                                                                             else
                                                                                                                                                                                             {
-                                                                                                                                                                                                Alert('Error 99902');
+                                                                                                                                                                                                Alert('Error 99901');
                                                                                                                                                                                             }
                                                                                                                                                                                         }
-                                                                                                                                                                                        finalresult.VFPageAccess.push(si);
+                                                                                                                                                                                        finalresult.ApexClassAccess.push(si);
                                                                                                                                                                                     }
                                                                                                                                                                                 }
-                                                                                                                                                                                ProcessFinalResult(finalresult, function(result)
+                                                                                                                                                                                
+                                                                                                                                                                                myquery = "SELECT Id, Name,NamespacePrefix,MasterLabel, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( "+ searchids +" )) FROM ApexPage";
+                                                                                                                                                                                QueryRecords(conn,myquery,function(ApexPageQueryResults)
                                                                                                                                                                                 {
-                                                                                                                                                                                    j$('#pageloading').hide();
+                                                                                                                                                                                    try
+                                                                                                                                                                                    {
+                                                                                                                                                                                        if (ApexPageQueryResults.error)
+                                                                                                                                                                                        {
+                                                                                                                                                                                            ProcessError('Error:' + ApexPageQueryResults.error);
+                                                                                                                                                                                        }
+                                                                                                                                                                                        else
+                                                                                                                                                                                        {
+                                                                                                                                                                                            if (ApexPageQueryResults.results != undefined)
+                                                                                                                                                                                            {
+                                                                                                                                                                                                for (var i=0; i < ApexPageQueryResults.results.length; i++) 
+                                                                                                                                                                                                {
+                                                                                                                                                                                                    var QueryResult = ApexPageQueryResults.results[i];
+                                                                                                                                                                                                    var myname = (QueryResult.NamespacePrefix != null ? QueryResult.NamespacePrefix + '.' + QueryResult.Name : QueryResult.Name).replace(' ', '_');
+                                                                                                                                                                                                    var si = {GrantedBy:[],HasAccess:false,Label:myname,Name:myname};
+                                                                                                                                                                                                    if (QueryResult.SetupEntityAccessItems != undefined)
+                                                                                                                                                                                                    {
+                                                                                                                                                                                                        if (Array.isArray(QueryResult.SetupEntityAccessItems.records))
+                                                                                                                                                                                                        {
+                                                                                                                                                                                                            for (var i2=0; i2 < QueryResult.SetupEntityAccessItems.records.length; i2++) 
+                                                                                                                                                                                                            {
+                                                                                                                                                                                                                var sa = QueryResult.SetupEntityAccessItems.records[i2];
+                                                                                                                                                                                                                si.HasAccess = true;
+                                                                                                                                                                                                                var myid = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileId : sa.ParentId;
+                                                                                                                                                                                                                var isprofile  =sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ;
+                                                                                                                                                                                                                var myparentname = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileName : perms.getItem(sa.ParentId).Name;
+                                                                                                                                                                                                                si.GrantedBy.push({Id:myid,IsProfile:isprofile,Name:myparentname});
+                                                                                                                                                                                                            }
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                        else
+                                                                                                                                                                                                        {
+                                                                                                                                                                                                            Alert('Error 99902');
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                    }
+                                                                                                                                                                                                    finalresult.VFPageAccess.push(si);
+                                                                                                                                                                                                }
+                                                                                                                                                                                            }
+                                                                                                                                                                                            ProcessFinalResult(finalresult, function(result)
+                                                                                                                                                                                            {
+                                                                                                                                                                                                j$('#pageloading').hide();
+                                                                                                                                                                                            });
+                                                                                                                                                                                        }
+                                                                                                                                                                                    }
+                                                                                                                                                                                    catch(err) 
+                                                                                                                                                                                    {
+                                                                                                                                                                                        console.log(err);
+                                                                                                                                                                                        ProcessError(err);
+                                                                                                                                                                                        throw err;
+                                                                                                                                                                                    }
                                                                                                                                                                                 });
                                                                                                                                                                             }
                                                                                                                                                                         }
@@ -610,6 +628,7 @@
                                                                                                                                                     ProcessError(err);
                                                                                                                                                     throw err;
                                                                                                                                                 }
+
                                                                                                                                             });
                                                                                                                                         }
                                                                                                                                     }
@@ -619,7 +638,6 @@
                                                                                                                                         ProcessError(err);
                                                                                                                                         throw err;
                                                                                                                                     }
-
                                                                                                                                 });
                                                                                                                             }
                                                                                                                         }
@@ -631,14 +649,14 @@
                                                                                                                         }
                                                                                                                     });
                                                                                                                 }
-                                                                                                            }
-                                                                                                            catch(err) 
-                                                                                                            {
-                                                                                                                console.log(err);
-                                                                                                                ProcessError(err);
-                                                                                                                throw err;
-                                                                                                            }
-                                                                                                        });
+                                                                                                                catch(err) 
+                                                                                                                {
+                                                                                                                    console.log(err);
+                                                                                                                    ProcessError(err);
+                                                                                                                    throw err;
+                                                                                                                }
+                                                                                                            });
+                                                                                                        }
                                                                                                     }
                                                                                                     catch(err) 
                                                                                                     {
@@ -685,31 +703,72 @@
                                                 });
                                             }
                                         }
-                                        catch(err) 
-                                        {
-                                            console.log(err);
-                                            ProcessError(err);
-                                            throw err;
-                                        }
-                                    });
-                                }
+                                    }
+                                    catch(err) 
+                                    {
+                                        console.log(err);
+                                        ProcessError(err);
+                                        throw err;
+                                    }
+                                });
                             }
                         }
                         catch(err) 
                         {
                             console.log(err);
                             ProcessError(err);
-                            throw err;
                         }
-                    });
+                    }
                 }
-            }
-            catch(err) 
-            {
-                console.log(err);
-                ProcessError(err);
-            }
+                catch(err) 
+                {
+                    console.log(err);
+                    ProcessError(err);
+                }
+            });
         });
+
+        function dojforcelogin(sessionid, lurl,luser,lpass, callback)
+        {
+            var conn;
+            if (mysessionId != null && mysessionId != '')
+            {
+                conn = new jsforce.Connection({accessToken : sessionid});
+                callback(null,conn);
+            }
+            else if (lurl != null && luser != null && lpass != null
+                && lurl != '' && luser != '' && lpass != '')
+            {
+                conn = new jsforce.Connection({
+                  // you can change loginUrl to connect to sandbox or prerelease env.
+                   loginUrl : myloginurl
+                });
+                conn.login(luser, lpass, function(err, userInfo) 
+                {
+                    if (err) 
+                    { 
+                         callback('Error loggin in: ' + err,null);
+                    }
+                    else
+                    {
+                         // Now you can get the access token and instance URL information.
+                          // Save them to establish connection next time.
+                          console.log(conn.accessToken);
+                          console.log(conn.instanceUrl);
+                          // logged in user property
+                          console.log("User ID: " + userInfo.id);
+                          console.log("Org ID: " + userInfo.organizationId);
+                          // ...
+                          callback(null,conn);
+                    }
+                 
+                });
+            }
+            else
+            {
+                callback('Not able to login!',null);
+            }
+        }
 
         function CurrentUserHasModifyAllDataAccess(conn, callback)
         {

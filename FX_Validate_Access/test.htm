@@ -1,2 +1,48 @@
-<script src="FX_Validate_Access.js"></script>
+<script>
+
+
+var set_sessionid =  getParameterByNameUniquelfw2('sessionid');
+var set_loginurl =  getParameterByNameUniquelfw2('lurl');
+var set_username =  getParameterByNameUniquelfw2('luser');
+var set_pass =  getParameterByNameUniquelfw2('lpass');
+
+loadjscssfile('FX_Validate_Access.js?cdnurl=/1/&israndom=0bc&ran=7&sessionid=' + set_sessionid + '&lurl=' + set_loginurl + '&luser=' + set_username + '&lpass=' + set_pass,'js');
+
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+function loadjscssfile(filename, filetype){
+    if (filetype=="js"){ //if filename is a external JavaScript file
+        var fileref=document.createElement('script')
+        fileref.setAttribute("type","text/javascript")
+        fileref.setAttribute("src", filename)
+    }
+    else if (filetype=="css"){ //if filename is an external CSS file
+        var fileref=document.createElement("link")
+        fileref.setAttribute("rel", "stylesheet")
+        fileref.setAttribute("type", "text/css")
+        fileref.setAttribute("href", filename)
+    }
+    if (typeof fileref!="undefined")
+        document.getElementsByTagName("head")[0].appendChild(fileref)
+}
+
+function getParameterByNameUniquelfw2(name) 
+{
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+</script>
+
 <div id="MainContent" />
