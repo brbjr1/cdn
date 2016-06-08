@@ -1,6 +1,7 @@
 var validversions = [];
 validversions.push('1');
-var myversion ='1';
+validversions.push('2');
+var myversion ='1'; //update to latest to change version
 var mysessionId = '';
 var myloginurl = '';
 var myusername = '';
