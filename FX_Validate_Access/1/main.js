@@ -167,7 +167,7 @@
                             }
                             else
                             {
-                                CurrentUserHasModifyAllDataAccess(conn,function(err,myuserid, hasaccessresult)
+                                CurrentUserHasModifyAllDataAccess(conn,myuserid,function(err,myuserid, hasaccessresult)
                                 {
                                     try
                                     {
