@@ -314,7 +314,8 @@
                                                                                                                     }
                                                                                                                 
                                                                                                                     //console.log(DescribeAllSObjectsResult);
-                                                                                                                    var MasterDetailChildParentRelationships  = new HashTable();
+                                                                                                                    var ChildParentRelationships  = new HashTable();
+                                                                                                                    var ParentChildRelationships  = new HashTable();
                                                                                                                     var SobjectHT = new HashTable();
                                                                                                                     var RelatedFXObjectsHT = new HashTable();
                                                                                                                     j$.each(DescribeAllSObjectsResult, function (index, item) 
@@ -334,7 +335,7 @@
                                                                                                                         for (var i=0; i < myfields.length; i++) 
                                                                                                                         {
                                                                                                                             var field = myfields[i];
-                                                                                                                            if (field.type == 'MasterDetail' || field.type == 'Lookup' && field.referenceTo != undefined)
+                                                                                                                            if ((field.type == 'MasterDetail' || field.type == 'Lookup' ) && field.referenceTo != undefined && field.referenceTo != null)
                                                                                                                             {
                                                                                                                                 if (myparents.indexOf(field.referenceTo) < 0)
                                                                                                                                 {
@@ -344,17 +345,37 @@
                                                                                                                         }
                                                                                                                         if (myparents.length > 0)
                                                                                                                         {
-                                                                                                                            MasterDetailChildParentRelationships.setItem(sobjecttype, myparents);
+                                                                                                                            ChildParentRelationships.setItem(sobjecttype, myparents);
+                                                                                                                            for (var i=0; i < myparents.length; i++) 
+                                                                                                                            {
+                                                                                                                                var myparent = myparents[0];
+                                                                                                                                var mychildern = ParentChildRelationships.hasItem(myparent) ? ParentChildRelationships.getItem(myparent) : [];
+                                                                                                                                if (mychildern.indexOf(sobjecttype) < 0)
+                                                                                                                                {
+                                                                                                                                    mychildern.push(sobjecttype);
+                                                                                                                                }
+                                                                                                                                if (mychildern.length > 0)
+                                                                                                                                {
+                                                                                                                                    ParentChildRelationships.setItem(myparent,mychildern);
+                                                                                                                                }
+                                                                                                                            }
                                                                                                                         }
                                                                                                                     });
 
-                                                                                                                    //console.log(MasterDetailChildParentRelationships);
+                                                                                                                    //console.log(ChildParentRelationships);
                                                                                                                     var RelatedFXObjectNames = [];
                                                                                                                     for (var i=0; i < RelatedFXObjectsHT.keys.length; i++) 
                                                                                                                     {
                                                                                                                         var mykey = RelatedFXObjectsHT.keys[i];
                                                                                                                         var parentname = RelatedFXObjectsHT.getItem(mykey);
-                                                                                                                        getRelatedObjects(RelatedFXObjectNames, parentname.fullName, MasterDetailChildParentRelationships);
+                                                                                                                        if (parentname != undefined)
+                                                                                                                        {
+                                                                                                                            getRelatedObjects(RelatedFXObjectNames, parentname.fullName, ParentChildRelationships);
+                                                                                                                        }
+                                                                                                                        else
+                                                                                                                        {
+                                                                                                                            var a1 = '';
+                                                                                                                        }
                                                                                                                     }
                                                                                                                     //console.log(RelatedFXObjectNames);
                                                                                                                     
@@ -1117,18 +1138,25 @@
             alert(error);
         }
 
-        function getRelatedObjects(results, parentApi, ChildParentRelationships)
+        function getRelatedObjects(results, parentApi, ParentChildernRelationships)
         {
-            if (ChildParentRelationships.hasItem(parentApi))
+            if (ParentChildernRelationships.hasItem(parentApi))
             {
-                var targets = ChildParentRelationships.getItem(parentApi);
+                var targets = ParentChildernRelationships.getItem(parentApi);
                 for (var i=0; i < targets.length; i++) 
                 {
                     var childname = targets[i];
-                    if (results.indexOf(childname) < 0)
+                    if (childname != undefined)
                     {
-                        results.push(childname);
-                        getRelatedObjects(results, childname,ChildParentRelationships);
+                        if (results.indexOf(childname) < 0)
+                        {
+                            results.push(childname);
+                            getRelatedObjects(results, childname,ParentChildernRelationships);
+                        }
+                    }
+                    else
+                    {
+                        var a1 = '';
                     }
                 }
             }

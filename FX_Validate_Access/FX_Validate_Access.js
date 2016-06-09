@@ -14,6 +14,7 @@ var myserverUrl = '';
 
 var myuserid = '';
 var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
+var mycdnurl2 = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
 var targetUserId = getParameterByName('id');
 
 
@@ -47,8 +48,8 @@ if (myscripturl != '')
 	{
 		//to use a localhost as a cdn you must make it look like a domain otherwise chrome will report it as a cross doamin request
 		//examle host enty 127.0.0.1       localhost	testmyjs.com
-		mycdnurl = scrcdn;
-		console.log('using custom sdnurl:' + mycdnurl);
+		mycdnurl2 = scrcdn;
+		console.log('using custom sdnurl:' + mycdnurl2);
 	}
 	if (scrisrandom != null && scrisrandom != '')
 	{
@@ -65,6 +66,7 @@ if (myscripturl != '')
 }
 
 mycdnurl = mycdnurl + '/'+myversion+'/';
+mycdnurl2 = mycdnurl2 + '/'+myversion+'/';
 
 
 var scrsuffix = '';
@@ -94,8 +96,8 @@ loadresourcesinorder(loadurls, function()
 	{
 		//
 		//mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/';
-		j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/' + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 
-		//j2$( "#MainContent" ).load( mycdnurl + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 	
+		//j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/' + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 
+		j2$( "#MainContent" ).load( mycdnurl + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 	
 		{
 			if ( status == "error" ) 
 			{
@@ -104,7 +106,7 @@ loadresourcesinorder(loadurls, function()
 			}
 			else
 			{
-				loadjscssfile(mycdnurl + 'main.js?' + scrsuffix,'js');
+				loadjscssfile(mycdnurl2 + 'main.js?' + scrsuffix,'js');
 			}
 		});
 	});
