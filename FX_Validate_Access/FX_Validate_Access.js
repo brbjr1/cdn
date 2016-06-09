@@ -3,11 +3,17 @@ validversions.push('1');
 validversions.push('2');
 var myversion ='1'; //update to latest to change version
 var mysessionId = '';
+
+/***Have not been able to login with usersname password because of cross domain issue ***/
+//never will be used in prod
 var myloginurl = '';
 var myusername = '';
 var mypassword = '';
+var myserverUrl = '';
+/*****************************************************************************************/
+
 var myuserid = '';
-var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access/'+myversion+'/';
+var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
 var targetUserId = getParameterByName('id');
 
 
@@ -31,22 +37,19 @@ if (myscripturl != '')
 {
 	var scrversion = getScriptParameterByNameUniquelfw('version',myscripturl);
 	var scrcdn = getScriptParameterByNameUniquelfw('cdnurl',myscripturl);
-	//var scrsessionid = getScriptParameterByNameUniquelfw('sessionid',myscripturl);
-	var scrisrandom = getScriptParameterByNameUniquelfw('israndom',myscripturl);
+	
+	var scrisrandom = getScriptParameterByNameUniquelfw('israndom',myscripturl)== '1';
 	if (scrversion != null && scrversion.length > 0 &&  validversions.indexOf(scrversion) > 0)
 	{
 		myversion = scrversion;
 	}
 	if (scrcdn != null && scrcdn != '')
 	{
+		//to use a localhost as a cdn you must make it look like a domain otherwise chrome will report it as a cross doamin request
+		//examle host enty 127.0.0.1       localhost	testmyjs.com
 		mycdnurl = scrcdn;
-		hascustoncdn = true;
 		console.log('using custom sdnurl:' + mycdnurl);
 	}
-	//if (scrsessionid != null)
-	//{
-	//	mysessionId = scrsessionid;
-	//}
 	if (scrisrandom != null && scrisrandom != '')
 	{
 		israndom = scrisrandom == '1';
@@ -57,8 +60,12 @@ if (myscripturl != '')
 	myusername = getScriptParameterByNameUniquelfw('luser',myscripturl);
 	mypassword = getScriptParameterByNameUniquelfw('lpass',myscripturl);
 	myuserid = getScriptParameterByNameUniquelfw('myuserid',myscripturl); 
+	myserverUrl = getScriptParameterByNameUniquelfw('surl',myscripturl); 
 
 }
+
+mycdnurl = mycdnurl + '/'+myversion+'/';
+
 
 var scrsuffix = '';
 if (israndom == true)
@@ -85,7 +92,10 @@ loadresourcesinorder(loadurls, function()
 
 	j2$(document).ready(function()
 	{
-		j2$( "#MainContent" ).load( mycdnurl + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 
+		//
+		//mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/';
+		j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/' + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 
+		//j2$( "#MainContent" ).load( mycdnurl + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 	
 		{
 			if ( status == "error" ) 
 			{

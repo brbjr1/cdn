@@ -135,7 +135,7 @@
         j$(document).ready(function()
         {
             var finalresult = {FXObjects:[],FXRelatedObjects:[],PermissionSets:[],PackageLicense:[],ApexClassAccess:[],VFPageAccess:[],SystemPermissions:[]};
-            dojforcelogin(mysessionId, myloginurl,myusername,mypassword, function(loginerr, conn)
+            dojforcelogin(mysessionId, myserverUrl, myloginurl,myusername,mypassword, function(loginerr, conn)
             {
                 try
                 {
@@ -153,9 +153,13 @@
                             {
                                 ProcessError('Id not found'); 
                             }
+                            else if (myuserid == undefined || myuserid == null || myuserid == '')
+                            {
+                                ProcessError('My UserId not found'); 
+                            }
                             else
                             {
-                                CurrentUserHasModifyAllDataAccess(conn,myuserid,function(err,myuserid, hasaccessresult)
+                                CurrentUserHasModifyAllDataAccess(conn,myuserid,function(err, hasaccessresult)
                                 {
                                     try
                                     {
@@ -716,12 +720,12 @@
             });
         });
 
-        function dojforcelogin(sessionid, lurl,luser,lpass, callback)
+        function dojforcelogin(sid, surl,lurl,luser,lpass, callback)
         {
             var conn;
-            if (mysessionId != null && mysessionId != '')
+            if (sid != null && sid != '' && (surl == null || surl == '' ) )
             {
-                conn = new jsforce.Connection({accessToken : sessionid});
+                conn = new jsforce.Connection({accessToken : sid});
                 callback(null,conn);
             }
             else if (lurl != null && luser != null && lpass != null
@@ -760,6 +764,14 @@
                     }
                  
                 });
+            }
+            else if (sid != null && myserverUrl != null
+                && sid != '' && myserverUrl != '')
+            {
+                conn = new jsforce.Connection(
+                    {'sessionId' : sid,
+                    'serverUrl' :myserverUrl});
+                callback(null,conn);
             }
             else
             {
@@ -1655,31 +1667,38 @@
         {
             GetAllCustomObject(conn,function(err,fullNames)
             {
-                var results = [];
-                DescribeAllSObjects2(conn, results,10,'',fullNames,function(err, result)
+                if (err)
                 {
-                    var missing = [];
-                    var found = [];
-                    if (result != undefined)
+                    callback(err,null);
+                }
+                else
+                {
+                    var results = [];
+                    DescribeAllSObjects2(conn, results,10,'',fullNames,function(err, result)
                     {
-                        for (var i=0; i < result.length; i++) 
+                        var missing = [];
+                        var found = [];
+                        if (result != undefined)
                         {
-                            found.push(result[i].fullName);
+                            for (var i=0; i < result.length; i++) 
+                            {
+                                found.push(result[i].fullName);
+                            }
                         }
-                    }
-                    for (var i=0; i < fullNames.length; i++) 
-                    {
-                        if (found.indexOf(fullNames[i]) < 0)
+                        for (var i=0; i < fullNames.length; i++) 
                         {
-                            missing.push(fullNames[i]);
+                            if (found.indexOf(fullNames[i]) < 0)
+                            {
+                                missing.push(fullNames[i]);
+                            }
                         }
-                    }
-                    if (missing.length > 0)
-                    {
-                        console.log('Missing DescribeAllSObjects Objects:' + missing);
-                    }
-                    callback(missing.length > 0 ? err : null, result);
-                });
+                        if (missing.length > 0)
+                        {
+                            console.log('Missing DescribeAllSObjects Objects:' + missing);
+                        }
+                        callback(missing.length > 0 ? err : null, result);
+                    });
+                }
             });
         }
 
