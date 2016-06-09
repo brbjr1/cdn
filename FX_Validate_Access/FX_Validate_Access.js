@@ -1,7 +1,8 @@
 var validversions = [];
 validversions.push('1');
 validversions.push('2');
-var myversion ='2'; //update to latest to change version
+validversions.push('3');
+var myversion ='3'; //update to latest to change version
 var mysessionId = '';
 
 /***Have not been able to login with usersname password because of cross domain issue ***/
@@ -15,7 +16,7 @@ var myserverUrl = '';
 var myuserid = '';
 var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
 var mycdnurl2 = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
-var targetUserId = getParameterByName('id');
+var targetUserId = getParameterByNamelfw('id');
 
 
 var scripts = document.getElementsByTagName("script");
@@ -33,13 +34,12 @@ if (scripts)
 	}
 }
 
-var israndom = false;
 if (myscripturl != '')
 {
 	var scrversion = getScriptParameterByNameUniquelfw('version',myscripturl);
 	var scrcdn = getScriptParameterByNameUniquelfw('cdnurl',myscripturl);
 	
-	var scrisrandom = getScriptParameterByNameUniquelfw('israndom',myscripturl)== '1';
+	
 	if (scrversion != null && scrversion.length > 0 &&  validversions.indexOf(scrversion) > 0)
 	{
 		myversion = scrversion;
@@ -51,11 +51,7 @@ if (myscripturl != '')
 		mycdnurl2 = scrcdn;
 		console.log('using custom sdnurl:' + mycdnurl2);
 	}
-	if (scrisrandom != null && scrisrandom != '')
-	{
-		israndom = scrisrandom == '1';
-	}
-
+	
 	mysessionId = getScriptParameterByNameUniquelfw('sessionid',myscripturl);
 	myloginurl = getScriptParameterByNameUniquelfw('lurl',myscripturl);
 	myusername = getScriptParameterByNameUniquelfw('luser',myscripturl);
@@ -69,24 +65,19 @@ mycdnurl = mycdnurl + '/'+myversion+'/';
 mycdnurl2 = mycdnurl2 + '/'+myversion+'/';
 
 
-var scrsuffix = '';
-if (israndom == true)
-{
-	scrsuffix = 'rand=' + makeid();
-}
 
 var loadurls = [];
-loadurls.push({url:'//code.jquery.com/jquery-2.2.4.min.js',type:'js'});
+loadurls.push({url:'https://code.jquery.com/jquery-2.2.4.min.js',type:'js'});
 
 //using custom namespace bootstrp to stop collision with sf
-loadurls.push({url:mycdnurl + 'Bootstrap_v3.3.6/css/bootstrap.min.css?' + scrsuffix,type:'css'});
-loadurls.push({url:mycdnurl + 'Bootstrap_v3.3.6/js/bootstrap.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/Custom_Bootstrap/201606090600/Bootstrap_v3.3.6/css/bootstrap.min.css',type:'css'});
+loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/Custom_Bootstrap/201606090600/Bootstrap_v3.3.6/js/bootstrap.min.js',type:'js'});
 
-loadurls.push({url:'//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css',type:'css'});
-loadurls.push({url:'//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js',type:'js'});
-loadurls.push({url:'//cdnjs.cloudflare.com/ajax/libs/jsforce/1.6.3/jsforce.min.js',type:'js'});
-loadurls.push({url:'//cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js',type:'js'});
-loadurls.push({url:mycdnurl + 'js/xml2json.min.js?' + scrsuffix,type:'js'});
+loadurls.push({url:'https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css',type:'css'});
+loadurls.push({url:'https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js',type:'js'});
+loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsforce/1.6.3/jsforce.min.js',type:'js'});
+loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js',type:'js'});
+loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/js/201606090600/xml2json.min.js',type:'js'});
 
 loadresourcesinorder(loadurls, function()
 {
@@ -96,8 +87,8 @@ loadresourcesinorder(loadurls, function()
 	{
 		//
 		//mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/';
-		//j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/' + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 
-		j2$( "#MainContent" ).load( mycdnurl + 'main.htm?' + scrsuffix,  function( response, status, xhr ) 	
+		//j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/' + 'main.htm?',  function( response, status, xhr ) 
+		j2$( "#MainContent" ).load( mycdnurl + 'main.htm',  function( response, status, xhr ) 	
 		{
 			if ( status == "error" ) 
 			{
@@ -106,24 +97,13 @@ loadresourcesinorder(loadurls, function()
 			}
 			else
 			{
-				loadjscssfile(mycdnurl2 + 'main.js?' + scrsuffix,'js');
+				loadjscssfilelfw(mycdnurl2 + 'main.js','js');
 			}
 		});
 	});
 
 });
 
-
-function makeid()
-{
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < 5; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-}
 
 function loadresourcesinorder(urls, callback)
 {
@@ -155,8 +135,7 @@ function getScriptParameterByNameUniquelfw(name, scr)
 }
 
 
-
-function getParameterByName(name) 
+function getParameterByNamelfw(name) 
 {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -164,7 +143,7 @@ function getParameterByName(name)
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function loadjscssfile(filename, filetype){
+function loadjscssfilelfw(filename, filetype){
     if (filetype=="js"){ //if filename is a external JavaScript file
         var fileref=document.createElement('script')
         fileref.setAttribute("type","text/javascript")
@@ -179,7 +158,6 @@ function loadjscssfile(filename, filetype){
     if (typeof fileref!="undefined")
         document.getElementsByTagName("head")[0].appendChild(fileref)
 }
-
 
 
 function requireUniquelfw(filename,filetype,callback)
