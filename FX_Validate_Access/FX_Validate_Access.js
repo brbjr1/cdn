@@ -1,7 +1,7 @@
 var validversions = [];
 validversions.push('1');
 validversions.push('2');
-var myversion ='1'; //update to latest to change version
+var myversion ='2'; //update to latest to change version
 var mysessionId = '';
 
 /***Have not been able to login with usersname password because of cross domain issue ***/
