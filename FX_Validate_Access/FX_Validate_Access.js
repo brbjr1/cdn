@@ -3,7 +3,8 @@ validversions.push('1');
 validversions.push('2');
 validversions.push('3');
 validversions.push('4');
-var myversion ='4'; //update to latest to change version
+validversions.push('5');
+var myversion ='5'; //update to latest to change version
 var mysessionId = '';
 
 /***Have not been able to login with usersname password because of cross domain issue ***/
