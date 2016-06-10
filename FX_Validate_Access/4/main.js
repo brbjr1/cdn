@@ -135,7 +135,7 @@
         j$(document).ready(function()
         {
             var finalresult = {FXObjects:[],FXRelatedObjects:[],PermissionSets:[],PackageLicense:[],ApexClassAccess:[],VFPageAccess:[],SystemPermissions:[]};
-            dojforcelogin(mysessionId, myserverUrl, myloginurl,myusername,mypassword, function(loginerr, conn)
+            dojforcelogin(mysessionId, myloginurl,myusername,mypassword,myproxyUrl, function(loginerr, conn)
             {
                 try
                 {
@@ -741,7 +741,7 @@
             });
         });
 
-        function dojforcelogin(sid, surl,lurl,luser,lpass, callback)
+        function dojforcelogin(sid,lurl,luser,lpass,lproxy, callback)
         {
             var conn;
             if (sid != null && sid != '' && (surl == null || surl == '' ) )
@@ -756,7 +756,7 @@
                 //when calling from sf accessToken is used
                 conn = new jsforce.Connection({
                   // you can change loginUrl to connect to sandbox or prerelease env.
-                   loginUrl : myloginurl
+                   loginUrl : myloginurl, proxyUrl:lproxy
                 });
                 conn.login(luser, lpass, function(err, userInfo) 
                 {
@@ -785,14 +785,6 @@
                     }
                  
                 });
-            }
-            else if (sid != null && myserverUrl != null
-                && sid != '' && myserverUrl != '')
-            {
-                conn = new jsforce.Connection(
-                    {'sessionId' : sid,
-                    'serverUrl' :myserverUrl});
-                callback(null,conn);
             }
             else
             {

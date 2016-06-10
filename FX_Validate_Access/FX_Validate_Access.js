@@ -11,7 +11,8 @@ var mysessionId = '';
 var myloginurl = '';
 var myusername = '';
 var mypassword = '';
-var myserverUrl = '';
+var myserverUrl = ''; //not used any more
+var myproxyUrl = ''; //https://testmyjs.com:3124/proxy
 /*****************************************************************************************/
 
 var myuserid = '';
@@ -58,7 +59,8 @@ if (myscripturl != '')
 	myusername = getScriptParameterByNameUniquelfw('luser',myscripturl);
 	mypassword = getScriptParameterByNameUniquelfw('lpass',myscripturl);
 	myuserid = getScriptParameterByNameUniquelfw('myuserid',myscripturl); 
-	myserverUrl = getScriptParameterByNameUniquelfw('surl',myscripturl); 
+	//myserverUrl = getScriptParameterByNameUniquelfw('surl',myscripturl); 
+	myproxyUrl = getScriptParameterByNameUniquelfw('purl',myscripturl); 
 
 }
 
