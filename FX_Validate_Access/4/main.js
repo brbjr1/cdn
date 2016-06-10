@@ -940,7 +940,7 @@ j$(document).ready(function()
 function dojforcelogin(sid, lurl, luser, lpass, lproxy, callback)
 {
     var conn;
-    if (sid != null && sid != '' && (surl == null || surl == ''))
+    if (sid != null && sid != '')
     {
         conn = new jsforce.Connection(
         {

@@ -12,7 +12,7 @@ var myloginurl = '';
 var myusername = '';
 var mypassword = '';
 var myserverUrl = ''; //not used any more
-var myproxyUrl = ''; //https://testmyjs.com:3124/proxy
+var myproxyUrl = ''; //https://localhost:3124/proxy
 /*****************************************************************************************/
 
 var myuserid = '';
