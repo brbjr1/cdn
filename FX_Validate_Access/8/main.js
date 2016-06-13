@@ -1692,14 +1692,14 @@ function ProcessFinalResult(result, callback)
     RemoteGetObjectInfoResult = result;
     if (result.Userdetail != undefined)
     {
-        j$('#userFullName').html('<a href="/' + result.Userdetail.Id + '?noredirect=1&isUserEntityOverride=1">' + result.Userdetail.Name + '</a>');
+        j$('#userFullName').html('<a href="/' + result.Userdetail.Id + '?noredirect=1&isUserEntityOverride=1" target="_blank">' + result.Userdetail.Name + '</a>');
         if (result.Userdetail.UserRole != undefined)
         {
             j$('#userRole').html(result.Userdetail.UserRole.Name);
         }
         if (result.Userdetail.Profile != undefined)
         {
-            j$('#userProfileName').html('<a href="/' + result.Userdetail.Profile.Id + '">' + result.Userdetail.Profile.Name + '</a>');
+            j$('#userProfileName').html('<a href="/' + result.Userdetail.Profile.Id + '" target="_blank">' + result.Userdetail.Profile.Name + '</a>');
             if (result.Userdetail.Profile.UserLicense != undefined)
             {
                 j$('#userProfileLicenseType').html(result.Userdetail.Profile.UserLicense.Name);
@@ -1717,7 +1717,7 @@ function ProcessFinalResult(result, callback)
             function(index, d)
             {
                 datatablePermissionSetresult += '<tr>';
-                datatablePermissionSetresult += '<td><a href="/' + d.Id + '">' + d.Label + '</a></td>';
+                datatablePermissionSetresult += '<td><a href="/' + d.Id + '" target="_blank">' + d.Label + '</a></td>';
                 datatablePermissionSetresult += '<td>' + d.Description + '</td>';
                 datatablePermissionSetresult += '</tr>';
             });
