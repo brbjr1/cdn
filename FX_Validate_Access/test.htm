@@ -10,41 +10,47 @@
     
     <script>
 
-        var set_sessionid =  getParameterByNameUniquelfw2('sid');
-        var set_loginurl =  getParameterByNameUniquelfw2('lurl');
-        var set_username =  getParameterByNameUniquelfw2('luser');
-        var set_pass =  getParameterByNameUniquelfw2('lpass');
-        var set_purl =  getParameterByNameUniquelfw2('purl');
-        loadjscssfile('FX_Validate_Access.js?cdnurl=/FX_Validate_Access&version=5&sessionid=' + set_sessionid + '&purl='+set_purl+'&lurl=' + set_loginurl + '&luser=' + set_username + '&lpass=' + set_pass,'js');
+        var set_sessionid =  getParameterByName('sid');
+        var set_loginurl =  getParameterByName('lurl');
+        var set_username =  getParameterByName('luser');
+        var set_pass =  getParameterByName('lpass');
+        var set_purl =  getParameterByName('purl');
+        loadjscssfile('FX_Validate_Access.js?cdnurl=/FX_Validate_Access&version=6&sessionid=' + set_sessionid + '&purl='+set_purl+'&lurl=' + set_loginurl + '&luser=' + set_username + '&lpass=' + set_pass,'js');
+       
 
-        function makeid()
+        function loadjscssfile(filename,filetype,callback)
         {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-            for( var i=0; i < 5; i++ )
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-            return text;
+            var head=document.getElementsByTagName("head")[0];
+            if (filetype=="js")
+            {
+                
+                var script=document.createElement('script');
+                script.src=filename;
+                script.type='text/javascript';
+                //real browsers
+                script.onload=callback;
+                //Internet explorer
+                script.onreadystatechange = function() 
+                {
+                    if (this.readyState == 'complete') 
+                    {
+                        callback(null);
+                    }
+                }
+                head.appendChild(script);
+            }
+            else if (filetype=="css")
+            {
+                var fileref=document.createElement("link");
+                fileref.setAttribute("rel", "stylesheet");
+                fileref.setAttribute("type", "text/css");
+                fileref.setAttribute("href", filename);
+                head.appendChild(fileref);
+                callback(null);
+            }
         }
 
-        function loadjscssfile(filename, filetype){
-            if (filetype=="js"){ //if filename is a external JavaScript file
-                var fileref=document.createElement('script')
-                fileref.setAttribute("type","text/javascript")
-                fileref.setAttribute("src", filename)
-            }
-            else if (filetype=="css"){ //if filename is an external CSS file
-                var fileref=document.createElement("link")
-                fileref.setAttribute("rel", "stylesheet")
-                fileref.setAttribute("type", "text/css")
-                fileref.setAttribute("href", filename)
-            }
-            if (typeof fileref!="undefined")
-                document.getElementsByTagName("head")[0].appendChild(fileref)
-        }
-
-        function getParameterByNameUniquelfw2(name) 
+        function getParameterByName(name) 
         {
             name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
             var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),

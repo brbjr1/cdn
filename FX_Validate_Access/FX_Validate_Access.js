@@ -4,22 +4,37 @@ validversions.push('2');
 validversions.push('3');
 validversions.push('4');
 validversions.push('5');
+validversions.push('6');
 var myversion ='5'; //update to latest to change version
 var mysessionId = '';
 
-/***Have not been able to login with usersname password because of cross domain issue ***/
-//never will be used in prod
+/***Used for local dev :never will be used in prod ***/
 var myloginurl = '';
 var myusername = '';
 var mypassword = '';
 var myserverUrl = ''; //not used any more
-var myproxyUrl = ''; //https://localhost:3124/proxy
+var myproxyUrl = ''; //https://localhost:8443/proxy
 /*****************************************************************************************/
 
 var myuserid = '';
 var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
-var mycdnurl2 = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
-var targetUserId = getParameterByNamelfw('id');
+var targetUserId = getParameterByName('id');
+
+
+if (!String.prototype.includes) {
+  String.prototype.includes = function(search, start) {
+    'use strict';
+    if (typeof start !== 'number') {
+      start = 0;
+    }
+    
+    if (start + search.length > this.length) {
+      return false;
+    } else {
+      return this.indexOf(search, start) !== -1;
+    }
+  };
+}
 
 
 var scripts = document.getElementsByTagName("script");
@@ -39,36 +54,28 @@ if (scripts)
 
 if (myscripturl != '')
 {
-	var scrversion = getScriptParameterByNameUniquelfw('version',myscripturl);
-	var scrcdn = getScriptParameterByNameUniquelfw('cdnurl',myscripturl);
-	
-	
+	var scrversion = getScriptParameterByName('version',myscripturl);
+	var scrcdn = getScriptParameterByName('cdnurl',myscripturl);
+
 	if (scrversion != null && scrversion.length > 0 &&  validversions.indexOf(scrversion) > 0)
 	{
 		myversion = scrversion;
 	}
 	if (scrcdn != null && scrcdn != '')
 	{
-		//to use a localhost as a cdn you must make it look like a domain otherwise chrome will report it as a cross doamin request
-		//examle host enty 127.0.0.1       localhost	testmyjs.com
-		mycdnurl2 = scrcdn;
-		console.log('using custom sdnurl:' + mycdnurl2);
+		mycdnurl = scrcdn;
+		console.log('using custom cdnurl:' + mycdnurl);
 	}
 	
-	mysessionId = getScriptParameterByNameUniquelfw('sessionid',myscripturl);
-	myloginurl = getScriptParameterByNameUniquelfw('lurl',myscripturl);
-	myusername = getScriptParameterByNameUniquelfw('luser',myscripturl);
-	mypassword = getScriptParameterByNameUniquelfw('lpass',myscripturl);
-	myuserid = getScriptParameterByNameUniquelfw('myuserid',myscripturl); 
-	//myserverUrl = getScriptParameterByNameUniquelfw('surl',myscripturl); 
-	myproxyUrl = getScriptParameterByNameUniquelfw('purl',myscripturl); 
-
+	mysessionId = getScriptParameterByName('sessionid',myscripturl);
+	myloginurl = getScriptParameterByName('lurl',myscripturl);
+	myusername = getScriptParameterByName('luser',myscripturl);
+	mypassword = getScriptParameterByName('lpass',myscripturl);
+	myuserid = getScriptParameterByName('myuserid',myscripturl); 
+	myproxyUrl = getScriptParameterByName('purl',myscripturl); 
 }
 
 mycdnurl = mycdnurl + '/'+myversion+'/';
-mycdnurl2 = mycdnurl2 + '/'+myversion+'/';
-
-
 
 var loadurls = [];
 loadurls.push({url:'https://code.jquery.com/jquery-2.2.4.min.js',type:'js'});
@@ -82,6 +89,7 @@ loadurls.push({url:'https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsforce/1.6.3/jsforce.min.js',type:'js'});
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js',type:'js'});
 loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/js/201606090600/xml2json.min.js',type:'js'});
+//loadurls.push({url:'https://cdn.datatables.net/fixedheader/3.1.2/css/fixedHeader.dataTables.min.css',type:'css'});
 
 loadresourcesinorder(loadurls, function()
 {
@@ -89,10 +97,7 @@ loadresourcesinorder(loadurls, function()
 
 	j2$(document).ready(function()
 	{
-		//
-		//mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/';
-		//j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access' + '/'+myversion+'/' + 'main.htm?',  function( response, status, xhr ) 
-		j2$( "#MainContent" ).load( mycdnurl2 + 'main.htm',  function( response, status, xhr ) 	
+		j2$( "#MainContent" ).load( mycdnurl + 'main.htm',  function( response, status, xhr ) 	
 		{
 			if ( status == "error" ) 
 			{
@@ -101,7 +106,7 @@ loadresourcesinorder(loadurls, function()
 			}
 			else
 			{
-				loadjscssfilelfw(mycdnurl2 + 'main.js','js');
+				loadjscssfile(mycdnurl + 'main.js','js');
 			}
 		});
 	});
@@ -117,7 +122,7 @@ function loadresourcesinorder(urls, callback)
 	 	var myurl = urls[0].url;
 	 	var mytype = urls[0].type;
 	 	urls.splice(0, 1);
-	 	requireUniquelfw(myurl,mytype, 
+	 	loadjscssfile(myurl,mytype, 
 	 	function()
 		{
 			loadresourcesinorder(urls,callback);
@@ -130,7 +135,7 @@ function loadresourcesinorder(urls, callback)
 
 }
 
-function getScriptParameterByNameUniquelfw(name, scr) 
+function getScriptParameterByName(name, scr) 
 {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -139,7 +144,7 @@ function getScriptParameterByNameUniquelfw(name, scr)
 }
 
 
-function getParameterByNamelfw(name) 
+function getParameterByName(name) 
 {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -147,24 +152,7 @@ function getParameterByNamelfw(name)
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function loadjscssfilelfw(filename, filetype){
-    if (filetype=="js"){ //if filename is a external JavaScript file
-        var fileref=document.createElement('script')
-        fileref.setAttribute("type","text/javascript")
-        fileref.setAttribute("src", filename)
-    }
-    else if (filetype=="css"){ //if filename is an external CSS file
-        var fileref=document.createElement("link")
-        fileref.setAttribute("rel", "stylesheet")
-        fileref.setAttribute("type", "text/css")
-        fileref.setAttribute("href", filename)
-    }
-    if (typeof fileref!="undefined")
-        document.getElementsByTagName("head")[0].appendChild(fileref)
-}
-
-
-function requireUniquelfw(filename,filetype,callback)
+function loadjscssfile(filename,filetype,callback)
 {
 	var head=document.getElementsByTagName("head")[0];
 	if (filetype=="js")
@@ -180,19 +168,24 @@ function requireUniquelfw(filename,filetype,callback)
 		{
 			if (this.readyState == 'complete') 
 			{
-			callback();
+				callback(null);
 			}
 		}
 		head.appendChild(script);
 	}
     else if (filetype=="css")
-    { //if filename is an external CSS file
+    {
         var fileref=document.createElement("link");
         fileref.setAttribute("rel", "stylesheet");
         fileref.setAttribute("type", "text/css");
         fileref.setAttribute("href", filename);
         head.appendChild(fileref);
-        callback();
+        callback(null);
 	}
 }
+
+
+
+
+
 

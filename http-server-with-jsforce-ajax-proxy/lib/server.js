@@ -8,6 +8,7 @@ var jsforceAjaxProxy = require('./proxy');
 var options = {
     key: fs.readFileSync('./http-server-with-jsforce-ajax-proxy/lib/ca.key'),
     cert: fs.readFileSync('./http-server-with-jsforce-ajax-proxy/lib/ca.crt'),
+    maxAge: -1
 };
 
 var app = express();
