@@ -6,7 +6,8 @@ validversions.push('4');
 validversions.push('5');
 validversions.push('6');
 validversions.push('7');
-var myversion ='7'; //update to latest to change version
+validversions.push('8');
+var myversion ='8'; //update to latest to change version
 var mysessionId = '';
 
 /***Used for local dev :never will be used in prod ***/
@@ -99,7 +100,7 @@ loadresourcesinorder(loadurls, function()
 	j2$(document).ready(function()
 	{
 		//j2$( "#MainContent" ).load( mycdnurl + 'main.htm',  function( response, status, xhr ) 	
-		j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access/6/main.htm',  function( response, status, xhr ) 	
+		j2$( "#MainContent" ).load( 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access/7/main.htm',  function( response, status, xhr ) 	
 		{
 			if ( status == "error" ) 
 			{
