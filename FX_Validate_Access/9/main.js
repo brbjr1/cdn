@@ -129,7 +129,7 @@ function FindRTPermissions(sobject)
 
 function ShowRecordTypePermissionsModal(sobject, sobjectlabel)
 {
-    j$('#RTHeader').html(sobjectlabel + ' Record Type Assigments');
+    j$('#RTHeader').html('<h2>' + sobjectlabel + ' Record Type Assigments</h2>');
     var fp = FindRTPermissions(sobject);
     var fs = FindSobject(sobject);
     var datatableFieldPermissionsresult = '';
@@ -161,7 +161,7 @@ function ShowRecordTypePermissionsModal(sobject, sobjectlabel)
 
 function ShowFieldPermissionsModal(sobject, sobjectlabel)
 {
-    j$('#FPHeader').html(sobjectlabel + ' Field Permissions');
+    j$('#FPHeader').html('<h2>' + sobjectlabel + ' Field Permissions</h2>');
     var fp = FindFieldPermissions(sobject);
     var fs = FindSobject(sobject);
     var datatableFieldPermissionsresult = '';
@@ -211,7 +211,7 @@ function ShowObjectModal(sobject, sobjectlabel)
         oheader = ofs.Label;
     }
 
-    j$('#OHeader').html(oheader + ' Object Settings');
+    j$('#OHeader').html('<h2>' + oheader + ' Object Settings</h2>');
 
     var osresult = '';
 
@@ -309,7 +309,7 @@ j$(document).ready(function()
     {
         window.location.hash = "RecordTypePermissionsModal";
         j$('#RTPermissionsTable').show();
-        var maxdocheight = j$(window).height() - 120;
+        var maxdocheight = j$(window).height() - 150;
         j$('body').css({overflow: 'hidden'});
         j$('#RTBody').css('height', maxdocheight);
 
@@ -318,7 +318,7 @@ j$(document).ready(function()
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -349,7 +349,7 @@ j$(document).ready(function()
     {
         window.location.hash = "FilePermissionsModal";
         j$('#FieldPermissionsTable').show();
-        var maxdocheight = j$(window).height() - 120;
+        var maxdocheight = j$(window).height() - 150;
         j$('body').css({overflow: 'hidden'});
         j$('#FPBody').css('height', maxdocheight);
 
@@ -358,7 +358,7 @@ j$(document).ready(function()
             "scrollCollapse": false,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -398,7 +398,7 @@ j$(document).ready(function()
         j$('#OFXObjectsTable').show();
         j$('#OFieldPermissionsTable').show();
 
-        var maxdocheight = j$(window).height() - 120;//j$('OHeader').height() - j$('OFooter').height();// * .80;
+        var maxdocheight = j$(window).height() - 150;//j$('OHeader').height() - j$('OFooter').height();// * .80;
         j$('#OBody').css('height', maxdocheight);
 
         j$('body').css({overflow: 'hidden'});
@@ -408,7 +408,7 @@ j$(document).ready(function()
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": false,
             "columnDefs": [
             {
@@ -423,7 +423,7 @@ j$(document).ready(function()
         {
             "scrollCollapse": true,
             "paging": false,
-            "order": [0, "asc"],
+            /*"order": [0, "asc"],*/
             "stateSave": false,
             "searching": false,
             "columnDefs": [
@@ -432,7 +432,8 @@ j$(document).ready(function()
                 "visible": true,
                 "searchable": false,
                 "orderDataType": "dom-checkbox-glyphicon"
-            }]
+            }
+            ]
         });
         
 
@@ -441,7 +442,7 @@ j$(document).ready(function()
             "scrollCollapse": false,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -1988,7 +1989,7 @@ function ProcessFinalResult(result, callback)
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -2047,7 +2048,7 @@ function ProcessFinalResult(result, callback)
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -2082,7 +2083,7 @@ function ProcessFinalResult(result, callback)
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -2121,7 +2122,7 @@ function ProcessFinalResult(result, callback)
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
@@ -2161,7 +2162,7 @@ function ProcessFinalResult(result, callback)
             "scrollCollapse": true,
             "paging": false,
             "order": [0, "asc"],
-            "stateSave": false,
+            "stateSave": true,
             "searching": true,
             "columnDefs": [
             {
