@@ -147,8 +147,8 @@ function ShowRecordTypePermissionsModal(sobject, sobjectlabel)
                 datatableFieldPermissionsresult += '<tr>';
                 datatableFieldPermissionsresult += '<td>' + d.Label + '</td>';
                 datatableFieldPermissionsresult += '<td>' + d.Name + '</td>';
-                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.Assigned, true, d.AssignedGrantedBy,fs) + '</td>'
-                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.Default, true, [],fs) + '</td>'
+                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.Assigned, true, d.AssignedGrantedBy,fs,'Object') + '</td>'
+                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.Default, true, [],fs,'Object') + '</td>'
                 datatableFieldPermissionsresult += '</tr>';
             });
         datatableFieldPermissionsresult += '</tbody>';
@@ -180,8 +180,8 @@ function ShowFieldPermissionsModal(sobject, sobjectlabel)
                 datatableFieldPermissionsresult += '<tr>';
                 datatableFieldPermissionsresult += '<td>' + d.Label + '</td>';
                 datatableFieldPermissionsresult += '<td>' + d.Name + '</td>';
-                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.HasRead, d.ReadIsAssignable, d.HasReadGrantedBy,fs) + '</td>'
-                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.HasEdit, d.EditIsAssignable, d.HasEditGrantedBy,fs) + '</td>'
+                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.HasRead, d.ReadIsAssignable, d.HasReadGrantedBy,fs,'Object') + '</td>'
+                datatableFieldPermissionsresult += '<td>' + GetSpanPermission(d.HasEdit, d.EditIsAssignable, d.HasEditGrantedBy,fs,'Object') + '</td>'
                 datatableFieldPermissionsresult += '</tr>';
             });
         datatableFieldPermissionsresult += '</tbody>';
@@ -1786,12 +1786,12 @@ function ProcessFinalResult(result, callback)
                 }
                 datatableFXObjectsresult += '</td>';
                 
-                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasRead, true, d.HasReadGrantedBy,d) + '</td>'
-                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasCreate, true, d.HasCreateGrantedBy,d) + '</td>';
-                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasEdit, true, d.HasEditGrantedBy,d) + '</td>';
-                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasDelete, true, d.HasDeleteGrantedBy,d) + '</td>';
-                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasViewAll, true, d.HasViewAllGrantedBy,d,d) + '</td>';
-                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasModifyAll, true, d.HasModifyAllGrantedBy,d) + '</td>';
+                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasRead, true, d.HasReadGrantedBy,d,'Object') + '</td>'
+                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasCreate, true, d.HasCreateGrantedBy,d,'Object') + '</td>';
+                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasEdit, true, d.HasEditGrantedBy,d,'Object') + '</td>';
+                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasDelete, true, d.HasDeleteGrantedBy,d,'Object') + '</td>';
+                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasViewAll, true, d.HasViewAllGrantedBy,d,'Object') + '</td>';
+                datatableFXObjectsresult += '<td>' + GetSpanPermission(d.HasModifyAll, true, d.HasModifyAllGrantedBy,d,'Object') + '</td>';
                 datatableFXObjectsresult += '<td><a onclick="ShowFieldPermissionsModal(&apos;' + d.APIName + '&apos;,&apos;' + d.Label + '&apos;);">' + getcount(d.fields, true, false, false) + '</a></td>';
                 datatableFXObjectsresult += '<td><a onclick="ShowFieldPermissionsModal(&apos;' + d.APIName + '&apos;,&apos;' + d.Label + '&apos;);">' + getcount(d.fields, false, true, false) + '</a></td>';
                 datatableFXObjectsresult += '<td><a onclick="ShowFieldPermissionsModal(&apos;' + d.APIName + '&apos;,&apos;' + d.Label + '&apos;);">' + getcount(d.fields, false, false, true) + '</a></td>';
@@ -1866,12 +1866,12 @@ function ProcessFinalResult(result, callback)
                 }
                 datatableFXRelatedObjectsresult += '</td>';
 
-                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasRead, true, d.HasReadGrantedBy,d) + '</td>'
-                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasCreate, true, d.HasCreateGrantedBy,d) + '</td>';
-                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasEdit, true, d.HasEditGrantedBy,d) + '</td>';
-                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasDelete, true, d.HasDeleteGrantedBy,d) + '</td>';
-                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasViewAll, true, d.HasViewAllGrantedBy,d) + '</td>';
-                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasModifyAll, true, d.HasModifyAllGrantedBy,d) + '</td>';
+                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasRead, true, d.HasReadGrantedBy,d,'Object') + '</td>'
+                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasCreate, true, d.HasCreateGrantedBy,d,'Object') + '</td>';
+                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasEdit, true, d.HasEditGrantedBy,d,'Object') + '</td>';
+                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasDelete, true, d.HasDeleteGrantedBy,d,'Object') + '</td>';
+                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasViewAll, true, d.HasViewAllGrantedBy,d,'Object') + '</td>';
+                datatableFXRelatedObjectsresult += '<td>' + GetSpanPermission(d.HasModifyAll, true, d.HasModifyAllGrantedBy,d,'Object') + '</td>';
                 datatableFXRelatedObjectsresult += '<td><a onclick="ShowFieldPermissionsModal(&apos;' + d.APIName + '&apos;,&apos;' + d.Label + '&apos;);">' + getcount(d.fields, true, false, false) + '</a></td>';
                 datatableFXRelatedObjectsresult += '<td><a onclick="ShowFieldPermissionsModal(&apos;' + d.APIName + '&apos;,&apos;' + d.Label + '&apos;);">' + getcount(d.fields, false, true, false) + '</a></td>';
                 datatableFXRelatedObjectsresult += '<td><a onclick="ShowFieldPermissionsModal(&apos;' + d.APIName + '&apos;,&apos;' + d.Label + '&apos;);">' + getcount(d.fields, false, false, true) + '</a></td>';
@@ -1913,7 +1913,7 @@ function ProcessFinalResult(result, callback)
             {
                 datatableApexClassesresult += '<tr>';
                 datatableApexClassesresult += '<td>' + d.Label + '</td>';
-                datatableApexClassesresult += '<td>' + GetSpanPermission(d.HasAccess, true, d.GrantedBy,null,null) + '</td>'
+                datatableApexClassesresult += '<td>' + GetSpanPermission(d.HasAccess, true, d.GrantedBy,null,'ClassAccess') + '</td>'
                 datatableApexClassesresult += '</tr>';
             });
         datatableApexClassesresult += '</tbody>';
@@ -1952,7 +1952,7 @@ function ProcessFinalResult(result, callback)
             {
                 datatableVisualforcePagesresult += '<tr>';
                 datatableVisualforcePagesresult += '<td>' + d.Label + '</td>';
-                datatableVisualforcePagesresult += '<td>' + GetSpanPermission(d.HasAccess, true, d.GrantedBy,null,null) + '</td>'
+                datatableVisualforcePagesresult += '<td>' + GetSpanPermission(d.HasAccess, true, d.GrantedBy,null,'PageAccess') + '</td>'
                 datatableVisualforcePagesresult += '</tr>';
             });
         datatableVisualforcePagesresult += '</tbody>';
@@ -1991,7 +1991,7 @@ function ProcessFinalResult(result, callback)
             {
                 datatableSystemPermissionsresult += '<tr>';
                 datatableSystemPermissionsresult += '<td>' + d.Label + '</td>';
-                datatableSystemPermissionsresult += '<td>' + GetSpanPermission(d.HasAccess, true, d.GrantedBy,null,null) + '</td>'
+                datatableSystemPermissionsresult += '<td>' + GetSpanPermission(d.HasAccess, true, d.GrantedBy,null,'SystemPermissions') + '</td>'
                 datatableSystemPermissionsresult += '</tr>';
             });
         datatableSystemPermissionsresult += '</tbody>';
@@ -3117,7 +3117,7 @@ function getRTcount(fields, all)
     return i;
 }
 
-function GetSpanPermission(hasaccess, ispermissionable, grantedby, CusomObject)
+function GetSpanPermission(hasaccess, ispermissionable, grantedby, CusomObject, sftype)
 {
     var results = '';
     results += '<span class="glyphicon ' + (hasaccess == true ? 'glyphicon-check' : 'glyphicon-unchecked') + ' ' + (ispermissionable == false ? 'text-grey' : '') + '" data-checked="' + hasaccess + '" ';
@@ -3139,7 +3139,28 @@ function GetSpanPermission(hasaccess, ispermissionable, grantedby, CusomObject)
                 {
                     mysobjectId = CusomObject.APIName;
                 }
-                gresults += "<a href='"+salesforceAccessURL+ encodeURIComponent("/"+ ri.Id.substring(0,15)  +"?s=ObjectsAndTabs&o="+mysobjectId)+"' target='_blank'>" + myname + "</a>";
+                var sfurl = '';
+                if(sftype == 'Object')
+                {
+                    sfurl = salesforceAccessURL+ encodeURIComponent("/"+ ri.Id.substring(0,15)  +"?s=ObjectsAndTabs&o="+mysobjectId);
+                }
+                if(sftype == 'SystemPermissions')
+                {
+                    sfurl = salesforceAccessURL+ encodeURIComponent("/"+ ri.Id.substring(0,15)  +"?s=SystemPermissions");
+                }
+                if(sftype == 'ClassAccess')
+                {
+                    sfurl = salesforceAccessURL+ encodeURIComponent("/"+ ri.Id.substring(0,15)  +"?s=ClassAccess");
+                }
+                if(sftype == 'PageAccess')
+                {
+                    sfurl = salesforceAccessURL+ encodeURIComponent("/"+ ri.Id.substring(0,15)  +"?s=PageAccess");
+                }
+                else
+                {
+                    sfurl = salesforceAccessURL+ encodeURIComponent("/"+ ri.Id.substring(0,15) );
+                }
+                gresults += "<a href='"+sfurl+"' target='_blank'>" + myname + "</a>";
             });
         if (gresults != '')
         {
