@@ -10,7 +10,7 @@ validversions.push('8');
 validversions.push('9');
 validversions.push('10');
 validversions.push('11');
-var myversion ='10'; //update to latest to change version
+var myversion ='11'; //update to latest to change version
 var mysessionId = '';
 
 
