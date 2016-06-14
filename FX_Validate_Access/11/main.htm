@@ -1,0 +1,318 @@
+ <style>
+    .text-grey 
+    {
+      color: grey;
+    }
+    .userleft
+    {
+        width:250px;
+        font-weight: bold;
+    }
+
+    .versioninfo 
+    {
+	    font-size: 10px;
+	    margin-top: 20px;
+	    color: #999999;
+	}
+
+    .dropdown:hover .dropdown-menu 
+    {
+      display: block;
+    }
+
+    /* .modal-fullscreen */
+
+    .modal-fullscreen 
+    {
+      background: transparent;
+    }
+
+    .modal-fullscreen .modal-dialog 
+    {
+        background: white;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .modal-fullscreen .modal-content 
+    {
+      min-height: 100%;
+      height: auto;
+      border-radius: 0;
+    }
+     .modal-fullscreen .modal-body 
+     {
+        
+        overflow-x: auto;
+        overflow-y: auto;
+        width: auto;
+        height:auto;
+        
+    }
+
+    /* .modal-fullscreen size: we use Bootstrap media query breakpoints */
+
+
+/*
+    
+    @media (min-width: 768px) {
+      .modal-fullscreen .modal-dialog {
+        width: 750px;
+      }
+    }
+    @media (min-width: 992px) {
+      .modal-fullscreen .modal-dialog {
+        width: 970px;
+      }
+    }
+    @media (min-width: 1200px) {
+      .modal-fullscreen .modal-dialog {
+         width: 1170px;
+      }
+
+      */
+      
+}
+
+
+    </style>
+    <div class="bs">
+        <div id="pageloading">
+            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 1000; background-color: black;">
+                &nbsp;
+            </div>
+            <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 20% 50%">
+                <img src="/img/loading.gif" />
+                <!--<img src="https://localhost:8443/animation/201606121500/default.gif" />-->
+                <!--<div class='uil-ring-css' style='transform:scale(0.4);'></div>-->
+            </div>
+        </div> 
+
+        <div class="panel panel-default">
+            <ul class="nav nav-pills nav-justified">
+                  <li class="active"><a data-toggle="tab" href="#UserDetails">User Details</a></li>
+                  <li><a data-toggle="tab" href="#FXObjectPermissions">FX Object Permissions</a></li>
+                  <li><a data-toggle="tab" href="#FXRelatedObjectPermissions">FX Related Object Permissions</a></li>
+                  <li><a data-toggle="tab" href="#ApexClasses">Apex Classes</a></li>
+                  <li><a data-toggle="tab" href="#VisualforcePages">Visualforce Pages</a></li>
+                  <li><a data-toggle="tab" href="#SystemPermissions">System Permissions</a></li>
+                  <li><a data-toggle="tab" href="#Warnings">Warnings</a></li>
+
+            </ul>
+        </div>
+
+        <div class="panel-body">
+            <div class="tab-content">
+                <div id="UserDetails" class="tab-pane fade in active">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <table class="table-bordered" width="100%">
+                            <tr><td class="userleft">Full Name:</td><td id="userFullName"></td></tr>
+                            <tr><td class="userleft">Role:</td><td id="userRole"></td></tr>
+                            <tr><td class="userleft">Profile Name:</td><td id="userProfileName"></td></tr>
+                            <tr><td class="userleft">Profile License Type:</td><td id="userProfileLicenseType"></td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Assigned Permission Sets</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="FXPermissionSetTable" />
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Assigned FX Licenses</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="FXLicensesTable" />
+                        </div>
+                    </div>
+                
+                </div>
+                <div id="FXObjectPermissions" class="tab-pane fade">
+                    <div id="fxobjectpermissiontable"/>
+                </div>
+
+                <div id="FXRelatedObjectPermissions" class="tab-pane fade">
+                    <div id="fxRelatedobjectpermissiontable"/>
+                </div>
+
+                <div id="ApexClasses" class="tab-pane fade">
+                    <div id="fxApexClassestable"/>
+                </div>
+
+                <div id="VisualforcePages" class="tab-pane fade">
+                    <div id="fxVisualforcePagestable"/>
+                </div>
+
+                <div id="SystemPermissions" class="tab-pane fade">
+                    <div id="FXSystemPermissionsTable"/>
+                </div>
+
+                <div id="Warnings" class="tab-pane fade">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">User Type</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXTicketingBackOffice" value="" />Ticket - Back Office</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXTicketingmobile" value="" />Ticket - Mobile</label>
+                                </div>
+
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXCPQBackOffice" value="" />CPQ User - Back Office</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXCPQmobile" value="" />CPQ - Mobile</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXBackOfficeSchedulingAndDispatch" value="" />FX Scheduling &amp; Dispatch - Back Office</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXBackOfficeSchedulingAndDispatchMapping" value="" />FX Scheduling &amp; Dispatch : Mapping - Back Office</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXEAM" value="" />EAM</label>
+                                </div>
+                                
+                                <div class="checkbox">
+                                    <label><input type="checkbox" onclick="UserTypeUpdated();" id="FXTimecard" value="" />Timecard</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">FX License Warnings</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="FXLicenseWarnings" />
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">FX Object Permissions Warnings</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="FXObjectPermissionsWarnings" />
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Apex Classes Warnings</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="FXApexClassesWarnings" />
+                            </div>
+                        </div>
+
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Visualforce page Warnings</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="FXVisualforcepageWarnings" />
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">System Permission Warnings</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="FXSystemPermissionWarnings" />
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Object Warnings</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="FXObjectWarnings" />
+                            </div>
+                        </div>
+                </div>
+
+            </div>
+            <div class="versioninfo">Version:<span id="version"></span></div>
+        </div>
+        
+        
+        <!-- Modals -->
+        <div id="FilePermissionsModal" tabindex="-1" class="modal modal-fullscreen fade" role="dialog">
+            <div class="modal-dialog">
+              <!-- Modal content-->
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title" id="FPHeader">Field Permissions</h4>
+                  </div>
+                  <!--<td2>-->
+                      <div class="modal-body" id="FPBody">
+                       
+                      </div>
+                  <!--</td2>-->
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+              </div>
+            </div>
+        </div>
+
+        <div id="RecordTypePermissionsModal" tabindex="-1" class="modal modal-fullscreen fade" role="dialog">
+            <div class="modal-dialog">
+              <!-- Modal content-->
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title" id="RTHeader">Record Type Assigments</h4>
+                  </div>
+                  <!--<td3>-->
+                      <div class="modal-body" id="RTBody">
+                       
+                      </div>
+                  <!--</td3>-->
+                  <div class="modal-footer" id="RTFooter">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+              </div>
+            </div>
+        </div>
+
+
+         <div id="ObjectModal" tabindex="-1" class="modal modal-fullscreen fade" role="dialog">
+            <div class="modal-dialog">
+              <!-- Modal content-->
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title" id="OHeader">Object</h4>
+                  </div>
+                  <!--<td4>-->
+                      <div class="modal-body" id="OBody">
+                       
+                      </div>
+                  <!--</td4>-->
+                  <div class="modal-footer" id="OFooter">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+              </div>
+            </div>
+        </div>
+
+    </div>

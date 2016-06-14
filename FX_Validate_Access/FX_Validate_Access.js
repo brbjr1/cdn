@@ -9,8 +9,13 @@ validversions.push('7');
 validversions.push('8');
 validversions.push('9');
 validversions.push('10');
+validversions.push('11');
 var myversion ='10'; //update to latest to change version
 var mysessionId = '';
+
+
+
+
 
 /***Used for local dev :never will be used in prod ***/
 var myloginurl = '';
@@ -20,11 +25,20 @@ var myserverUrl = ''; //not used any more
 var myproxyUrl = ''; //https://localhost:8443/proxy
 /*****************************************************************************************/
 
+
+
+
+
+
+
+
+
+
 var myuserid = '';
 var mycdnurl = 'https://rawgit.com/brbjr1/cdn/master/FX_Validate_Access';
 var targetUserId = getParameterByName('id');
 
-
+//IE support
 if (!String.prototype.includes) {
   String.prototype.includes = function(search, start) {
     'use strict';
@@ -39,7 +53,6 @@ if (!String.prototype.includes) {
     }
   };
 }
-
 
 var scripts = document.getElementsByTagName("script");
 var myscripturl = '';
@@ -111,6 +124,7 @@ loadresourcesinorder(loadurls, function()
 			}
 			else
 			{
+				j2$('#version').html(myversion);
 				loadjscssfile(mycdnurl + 'main.js','js');
 			}
 		});
