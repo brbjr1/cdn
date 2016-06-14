@@ -12,6 +12,8 @@ if (!String.prototype.startsWith)
 	};
 }
 
+var loadphase = 1;
+
 /******************Event Handlers *************************************/
 	function UserTypeUpdated()
 	{
@@ -188,6 +190,7 @@ if (!String.prototype.startsWith)
 		j$('#OBody').html(osresult);
 		j$('#ObjectModal').modal('show');
 	}
+
 	j$(window).resize(function()
 	{
 		var maxdocheight = j$(window).height() - 150;
@@ -360,10 +363,47 @@ if (!String.prototype.startsWith)
 			return j$('span', td).attr('data-checked') == 'true' ? '1' : '0';
 		});
 	}
+
+	j$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    	//alert('TAB CHANGED');
+    	if (e.target.hash == "#UserDetails" && loadphase  == 1)
+    	{
+    		j$("#UserDetails").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+    	if (e.target.hash == "#FXObjectPermissions" && loadphase <= 2)
+    	{
+    		j$("#FXObjectPermissions").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+    	if (e.target.hash == "#FXRelatedObjectPermissions" && loadphase <= 2)
+    	{
+    		j$("#FXRelatedObjectPermissions").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+    	if (e.target.hash == "#ApexClasses" && loadphase  == 1)
+    	{
+    		j$("#ApexClasses").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+    	if (e.target.hash == "#VisualforcePages" && loadphase  == 1)
+    	{
+    		j$("#VisualforcePages").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+    	if (e.target.hash == "#SystemPermissions" && loadphase  == 1)
+    	{
+    		j$("#SystemPermissions").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+    	if (e.target.hash == "#Warnings" && loadphase <= 2)
+    	{
+    		j$("#Warnings").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+    	}
+
+	})
 /******************END Event Handlers *************************************/
 
 j$(document).ready(function()
 {
+	
+	j$("#pagediv").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+	//j$("#UserDetails").LoadingOverlay("show",{image : "",fontawesome : "fa fa-spinner fa-spin"});
+
 	var finalresult = {
 		FXObjects: [],
 		FXRelatedObjects: [],
@@ -846,11 +886,15 @@ j$(document).ready(function()
 																																				}
 																																				ProcessFinalResult(finalresult, 1, function(result)
 																																				{
-																																					//j$('#pageloading').hide();
-																																					j$('#UserDetailsLoading').hide();
-																																					j$('#ApexClassesLoading').hide();
-																																					j$('#VisualforcePagesLoading').hide();
-																																					j$('#SystemPermissionsLoading').hide();
+																																					loadphase = 2;
+																																					j$("#pagediv").LoadingOverlay("hide", true);
+																																					j$("#UserDetails").LoadingOverlay("hide", true);
+																																				    //j$("#FXObjectPermissions").LoadingOverlay("hide", true);
+																																				    //j$("#FXRelatedObjectPermissions").LoadingOverlay("hide", true);
+																																				    j$("#ApexClasses").LoadingOverlay("hide", true);
+																																				    j$("#VisualforcePages").LoadingOverlay("hide", true);
+																																				    j$("#SystemPermissions").LoadingOverlay("hide", true);
+																																				    //j$("#Warnings").LoadingOverlay("hide", true);
 																																				});
 																																				var mypackage = {
 																																					'types': [],
@@ -994,10 +1038,14 @@ j$(document).ready(function()
 																																													}
 																																													ProcessFinalResult(finalresult, 2, function(result)
 																																													{
-																																														//j$('#pageloading').hide();
-																																														j$('#FXObjectPermissionsLoading').hide();
-																																														j$('#FXRelatedObjectPermissionsLoading').hide();
-																																														j$('#WarningsLoading').hide();
+																																														loadphase = 3
+																																														//j$("#UserDetails").LoadingOverlay("hide", true);
+																																													    j$("#FXObjectPermissions").LoadingOverlay("hide", true);
+																																													    j$("#FXRelatedObjectPermissions").LoadingOverlay("hide", true);
+																																													    //j$("#ApexClasses").LoadingOverlay("hide", true);
+																																													    //j$("#VisualforcePages").LoadingOverlay("hide", true);
+																																													    //j$("#SystemPermissions").LoadingOverlay("hide", true);
+																																													    j$("#Warnings").LoadingOverlay("hide", true);
 																																													});
 																																												}
 																																											}
