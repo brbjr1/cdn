@@ -15,7 +15,7 @@ validversions.push('13');
 validversions.push('14');
 validversions.push('15');
 validversions.push('16');
-validversions.push('17');
+validversions.push('18');
 var myversion ='16'; //update to latest to change version
 var mysessionId = '';
 
@@ -115,6 +115,7 @@ loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/js/201606090600/xml
 //loadurls.push({url:'https://cdn.datatables.net/fixedheader/3.1.2/css/fixedHeader.dataTables.min.css',type:'css'});
 loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/animation/201606141100/jquery-loading-overlay-1.3/src/loadingoverlay.min.js',type:'js'});
 loadurls.push({url:'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css',type:'css'});
+//loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.0/jquery.scrollTo.min.js',type:'js'});
 
 loadresourcesinorder(loadurls, function()
 {

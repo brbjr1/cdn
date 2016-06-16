@@ -63,12 +63,12 @@ if (!String.prototype.endsWith) {
 		}
 		j$('#OHeader').html('<h2>' + oheader + (ofs.ObjectDescribe.IsCustomTab == true ? ' Tab' : ' Object') +  ' Settings</h2>');
 		var osresult = '';
-		osresult += '<div id="GoToLocation" style="display:none;">'+ancor+'</div>"<a name="#Top"></a>';
+		osresult += '<div id="GoToLocation" style="display:none;">'+ancor+'</div><div name="Top"/>';
 
 		if (ofs.TabPermissions && ofs.TabPermissions.length > 0)
 		{
-			osresult += '<a name="#TabSettings"></a>';
-			osresult += '<div class="container-full"><h4>Tab Settings</h4><div class="panel panel-default">';
+			//osresult += '<a name="TabSettings"></a>';
+			osresult += '<div name="TabSettings" class="container-full"><h4>Tab Settings</h4><div class="panel panel-default">';
 			osresult += '<table id="OTabPermissionsTable" class="display" style="display:none;" cellspacing="0" width="100%">';
 			osresult += '<thead>';
 			osresult += '<tr>';
@@ -92,8 +92,8 @@ if (!String.prototype.endsWith) {
 
 		if (ort && ort.length > 0)
 		{
-			osresult += '<a href="#RecordTypePermissions"></a>';
-			osresult += '<div class="container-full"><h4>Record Types Assignments</h4><div class="panel panel-default">';
+			//osresult += '<a name="RecordTypePermissions"/>';
+			osresult += '<div name="RecordTypePermissions" class="container-full"><h4>Record Types Assignments</h4><div class="panel panel-default">';
 			osresult += '<table id="ORTPermissionsTable" class="display" style="display:none;" cellspacing="0" width="100%">';
 			osresult += '<thead>';
 			osresult += '<tr>';
@@ -121,8 +121,8 @@ if (!String.prototype.endsWith) {
 
 		if (ofs.IsPermissionable == true)
 		{
-			osresult += '<a name="#ObjectPermissions"></a>';
-			osresult += '<div class="container-full"><h4>Object Permissions</h4><div class="panel panel-default">';
+			//osresult += '<a name="ObjectPermissions"/>';
+			osresult += '<div name="ObjectPermissions" class="container-full"><h4>Object Permissions</h4><div class="panel panel-default">';
 			osresult += '<table id="OFXObjectsTable" class="display" style="display:none;" cellspacing="0" width="100%">';
 			osresult += '<thead>';
 			osresult += '<tr>';
@@ -144,9 +144,9 @@ if (!String.prototype.endsWith) {
 
 		if (ofs.OneFieldIsPermissionable == true && ofp)
 		{
-			osresult += '<a name="#FieldPermissions"></a>';
+			//osresult += '<a name="FieldPermissions"/>';
 			osresult += '<br/>';
-			osresult += '<div class="container-full"><h4>Field Permissions</h4><div class="panel panel-default">';
+			osresult += '<div name="FieldPermissions" class="container-full"><h4>Field Permissions</h4><div class="panel panel-default">';
 			osresult += '<table id="OFieldPermissionsTable" class="display" style="display:none;" cellspacing="0" width="100%">';
 			osresult += '<thead>';
 			osresult += '<tr>';
@@ -215,8 +215,8 @@ if (!String.prototype.endsWith) {
 
 		if(ofs.ChildRelatedObjects.length > 0 || ofs.ParentRelatedObjects.length > 0)
 		{
-			osresult += '<a name="Relationships"></a>';
-			osresult += '<div class="container-full"><h4>Relationships</h4><div class="panel panel-default">';
+			//osresult += '<a name="Relationships"/>';
+			osresult += '<div name="Relationships" class="container-full"><h4>Relationships</h4><div class="panel panel-default">';
 			osresult += '<table id="ORelationPermissionsTable" class="display" style="display:none;" cellspacing="0" width="100%">';
 			osresult += '<thead>';
 			osresult += '<tr>';
@@ -434,12 +434,24 @@ if (!String.prototype.endsWith) {
 			"stateSave": true,
 			"searching": true
 		});
-
 		var gotoloc = j$('#GoToLocation').html();
 		if (gotoloc && gotoloc.length > 0)
 		{
-			scrollToAnchor(gotoloc);
+			var aTag = j$("div[name='"+ gotoloc +"']");
+			if (aTag.length)
+			{
+				var loc1 = (j$("div[name='"+ gotoloc +"']").offset() || { "top": NaN }).top;
+				var loc2 = (j$('#OBody').offset() || { "top": NaN }).top;
+				if (isNaN(loc1) || isNaN(loc2)) {
+				    //alert("something is wrong, no top");
+				} else {
+				    //alert(loc1);
+				    j$('#OBody').animate({scrollTop: loc1 - loc2},0);
+				    //j$("div[name='"+ gotoloc +"']").scrollTo();
+				}
+			}
 		}
+		
 	}
 
 	j$('#ObjectModal').on('hidden.bs.modal', function()
@@ -1868,12 +1880,6 @@ j$(document).ready(function()
 			}
 			callback(true);
 		}
-	}
-
-	function scrollToAnchor(aid)
-	{
-	    var aTag = j$("a[name='"+ aid +"']");
-	    j$('html,body').animate({scrollTop: aTag.offset().top},'slow');
 	}
 
 	function FindFieldPermissions(sobject)
