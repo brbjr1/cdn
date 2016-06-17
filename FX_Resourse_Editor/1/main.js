@@ -1,5 +1,5 @@
 var j$ = jQuery.noConflict();
-var RemoteGetObjectInfoResult; //global var of final results
+var RemoteResult; //global var of final results
 var salesforceAccessURL = ''; //if value then links will use frontdoor.jsp on links to SalesForce pages
 var loadphase = 1;
 var fontawesomeloadIcon = "fa fa-spinner fa-pulse fa-3x fa-fw";
@@ -39,7 +39,7 @@ j$(document).ready(function()
 	//main loading
 	j$("#pagediv").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
 
-	var finalresult = {Static:[]};
+	var finalresult = [];
 	
 	DoJSforceLogin(mysessionId, myloginurl, myusername, mypassword, myproxyUrl, function(loginerr, conn)
 	{
@@ -69,121 +69,158 @@ j$(document).ready(function()
 							}
 							else
 							{
-								if (conn.instanceUrl)
+								conn.identity(function(err, res) 
 								{
-									salesforceAccessURL = conn.instanceUrl + '/secur/frontdoor.jsp?sid=' + conn.accessToken + '&retURL='
-								}
+									if (err) 
+							  		{ 
+								  		ProcessError(err); 
+								  	}
+								  	else
+								  	{
+								  		if (res.urls && res.urls.users)
+								  		{
+											//console.log("user ID: " + res.user_id);
+											//console.log("organization ID: " + res.organization_id);
+											//console.log("username: " + res.username);
+											//console.log("display name: " + res.display_name);
+											var link = document.createElement('a');
+											//  set href to any path
+											link.setAttribute('href', res.urls.users);
 
-								var myquery = "SELECT Id,Body,Name FROM StaticResource where NamespacePrefix = '' and ContentType in ('text/plain','application/javascript')";
-								QueryRecords(conn, myquery, function(Queryerr, QueryResults)
-								{
-									if (Queryerr)
-									{
-										ProcessError('Error:' + Queryerr);
+											//  get any piece of the url you're interested in
+											link.hostname;  //  'example.com'
+											link.port;      //  12345
+											link.search;    //  '?startIndex=1&pageSize=10'
+											link.pathname;  //  '/blog/foo/bar'
+											link.protocol;  //  'http:'
 
-
-
-									}
-									else
-									{
-										var presult = '';
-										presult += '<div id="header">Select Resorurce: ';
-										presult += '<select onchange="OnSelectChange(this.value)">';
-										if (QueryResults)
-										{
-											presult += '<option value="">--None--</option>';
-											for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
+											//  cleanup for garbage collection
+											link = null;
+											if (!conn.instanceUrl || conn.instanceUrl == '')
 											{
-												var QueryResult = QueryResults[ir1];
-												presult += '<option value="'+QueryResult.Name+'">'+QueryResult.Name+'</option>';
-												finalresult.Static.push(QueryResult);
+												conn.instanceUrl = link.protocol + '//' + link.hostname;
 											}
 										}
-
-										presult += '</select>';
-
-										presult += '</div>';
-
-										presult += '<div id="main">';
-
-										presult += '<textarea id="content" />';
-
-										presult += '</div>';
-
-										presult += '<div id="footer">';
-
-										presult += '</div>';
-										RemoteGetObjectInfoResult = finalresult;
-										j$("#pagediv").LoadingOverlay("hide");
-										j$("#pagediv").html(presult);
-
-										var mypackage = {
-											'types': [],
-											'version': jsforceAPIVersion
-										};
-									
-										mypackage.types.push(
+										if (conn.instanceUrl)
 										{
-											'members': '*',
-											'name': 'StaticResource'
-										});
-										if (1 ==2)
-										conn.metadata.retrieve({unpackaged: mypackage}, function(retreiveerr, retreivemetadata)
+											salesforceAccessURL = conn.instanceUrl + '/secur/frontdoor.jsp?sid=' + conn.accessToken + '&retURL='
+										}
+
+										var myquery = "SELECT Id,Body,Name FROM StaticResource where NamespacePrefix = '' and ContentType in ('text/plain','application/javascript')";
+										QueryRecords(conn, myquery, function(Queryerr, QueryResults)
 										{
-											try
+											if (Queryerr)
 											{
-												if (retreiveerr)
-												{
-													ProcessError(retreiveerr);
-												}
-												else
-												{
-													DocheckRetrieveStatus(conn, retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult)
-													{
-														try
-														{
-															if (retreivemetadataresulterr)
-															{
-																ProcessError(retreivemetadataresulterr);
-															}
-															else
-															{
-																AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile, function(zipresultserr, zipresults)
-																{
-																	try
-																	{
-																		if (zipresultserr)
-																		{
-																			ProcessError(zipresultserr);
-																		}
-																		else
-																		{
-
-																		}
-																	}
-																	catch (err)
-																	{
-																		console.log(err);
-																		ProcessError(err);
-																		throw err;
-																	}
-																});
-															}
-														}
-														catch (err)
-														{
-															console.log(err);
-															ProcessError(err);
-															throw err;
-														}
-													});
-												}
+												ProcessError('Error:' + Queryerr);
 											}
-											catch (err)
+											else
 											{
-												console.log(err);
-												ProcessError(err);
-												throw err;
+												var searchfor = [];
+												for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
+												{
+													searchfor.push(QueryResults[ir1].Name);
+												}
+												var mypackage = {'types': [],'version': jsforceAPIVersion};
+												mypackage.types.push({'members': searchfor,'name': 'StaticResource'});
+												conn.metadata.retrieve({unpackaged: mypackage}, function(retreiveerr, retreivemetadata)
+												{
+													try
+													{
+														if (retreiveerr)
+														{
+															ProcessError(retreiveerr);
+														}
+														else
+														{
+															DocheckRetrieveStatus(conn, retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult)
+															{
+																try
+																{
+																	if (retreivemetadataresulterr)
+																	{
+																		ProcessError(retreivemetadataresulterr);
+																	}
+																	else
+																	{
+																		AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile, function(zipresultserr, zipresults)
+																		{
+																			try
+																			{
+																				if (zipresultserr)
+																				{
+																					ProcessError(zipresultserr);
+																				}
+																				else
+																				{
+																					var presult = '';
+																					presult += '<div id="header">Select Resorurce: ';
+																					presult += '<select onchange="OnSelectChange(this.value)">';
+																					if (QueryResults)
+																					{
+																						presult += '<option value="">--None--</option>';
+																						for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
+																						{
+																							var QueryResult = QueryResults[ir1];
+
+																							var metaname = 'unpackaged/staticresources/' + QueryResult.Name + '.resource';
+																							if (zipresults.hasItem(metaname) == true)
+																							{
+																								var mydetail = zipresults.getItem(metaname);
+																								if(mydetail)
+																								{
+																									finalresult.push({Name:QueryResult.Name,Body:mydetail});
+																									presult += '<option value="'+QueryResult.Name+'">'+QueryResult.Name+'</option>';
+																								}
+																							}
+																						}
+																					}
+
+																					presult += '</select>';
+																					presult += '<button id="bntsave" type="button">Save</button>';
+
+																					presult += '</div>';
+
+																					presult += '<div id="main">';
+
+																					presult += '<textarea id="texteditor" style="display:none;width: 100%; height: 800px;" />';
+																					presult += '<div id="jsoneditor" style="display:none;width: 100%; height: 800px;"></div>'
+
+																					presult += '</div>';
+
+																					presult += '<div id="footer">';
+
+																					presult += '</div>';
+																					RemoteResult = finalresult;
+																					j$("#pagediv").LoadingOverlay("hide");
+																					j$("#pagediv").html(presult);
+																					
+																				}
+																			}
+																			catch (err)
+																			{
+																				console.log(err);
+																				ProcessError(err);
+																				throw err;
+																			}
+																		});
+																	}
+																}
+																catch (err)
+																{
+																	console.log(err);
+																	ProcessError(err);
+																	throw err;
+																}
+															});
+														}
+													}
+													catch (err)
+													{
+														console.log(err);
+														ProcessError(err);
+														throw err;
+													}
+												});
 											}
 										});
 									}
@@ -209,47 +246,90 @@ j$(document).ready(function()
 });
 
 /******************Support Functions *************************************/
-	
+	var editor;
 	function OnSelectChange(sel)
 	{
+		j$("#texteditor").hide();
+		j$("#jsoneditor").hide();
 		var value = sel.value;
 		var ffound = false;
-		if (sel && sel != '' && RemoteGetObjectInfoResult && RemoteGetObjectInfoResult.Static && RemoteGetObjectInfoResult.Static.length > 0)
+		if (sel && sel != '' && RemoteResult && RemoteResult.length > 0)
 		{
-			for (var ir1 = 0; ir1 < RemoteGetObjectInfoResult.Static.length; ir1++)
+			for (var ir1 = 0; ir1 < RemoteResult.length; ir1++)
 			{
-				var QueryResult = RemoteGetObjectInfoResult.Static[ir1];
-				if (QueryResult.Name == sel)
+				var Result = RemoteResult[ir1];
+				if (Result.Name == sel)
 				{
-					 j$.ajax({
-				            type:"POST",
-				            headers: {
-						        /*'x-Authorization': 'Bearer ' + mysessionId,*/
-						        'Authorization': 'Bearer ' + mysessionId,
-						        /*'salesforceproxy-endpoint' : 'https://na17.salesforce.com' + QueryResult.Body*/
-						    },
-				            url: 'https://na17.salesforce.com' + QueryResult.Body,
-				            method: 'GET',
-				            success: function(msg) 
-				            {
-				                console.log(msg);
-				            }
-				    });
-					/*
-					var jqxhr = j$.get('https://na17.salesforce.com/' QueryResult.Body, function() {
-					  alert( "success" );
-					})
-					  .done(function() {
-					    alert( "second success" );
-					  })
-					  .fail(function() {
-					    alert( "error" );
-					  })
-					  .always(function() {
-					    alert( "finished" );
-					  });
-					  */
-					j$("#content").val(QueryResult.Body);
+
+					if (sel == 'FX_Mobile_Filters' || sel == 'FX_Mobile_Rules')
+					{
+						if (!editor)
+						{
+							var container = document.getElementById("jsoneditor");
+					        var options = {
+							    mode: 'tree',
+							    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+							    onError: function (err) {
+							      alert(err.toString());
+							    },
+							    onModeChange: function (newMode, oldMode) {
+							      //console.log('Mode switched from', oldMode, 'to', newMode);
+							    },
+							    onError: function (err) {
+							      alert(err);
+							    }
+							  };
+						   	
+						   	editor = new JSONEditor(container, options);
+						}
+						var jsondata = Result.Body;
+						if (jsondata.startsWith('window.FX_Mobile_Filters ='))
+						{
+							jsondata = jsondata.substring('window.FX_Mobile_Filters ='.length);
+						}
+						if (jsondata.startsWith('window.FX_Mobile_Filters='))
+						{
+							jsondata = jsondata.substring('window.FX_Mobile_Filters='.length);
+						}
+
+						if (jsondata.startsWith('window.FX_Mobile_Rules ='))
+						{
+							jsondata = jsondata.substring('window.FX_Mobile_Rules ='.length);
+						}
+						if (jsondata.startsWith('window.FX_Mobile_Rules='))
+						{
+							jsondata = jsondata.substring('window.FX_Mobile_Rules='.length);
+						}
+
+						var validerrors = ''
+						{
+							try 
+							{
+							 	var c = j$.parseJSON(jsondata);
+							}
+							catch (err) 
+							{
+							  	validerrors = err;
+							}
+						}
+					
+						if (validerrors != '')
+						{
+						 	alert('You must fix valadation errors: ' + validerrors);
+						 	j$("#texteditor").show();
+							j$("#texteditor").val(Result.Body);
+						}
+						else
+						{
+					        editor.setText(jsondata);
+							j$("#jsoneditor").show();
+						}
+				    }
+				    else
+				    {
+				    	j$("#texteditor").show();
+						j$("#texteditor").val(Result.Body);
+					}
 					ffound = true;
 				}
 			}
@@ -389,9 +469,13 @@ j$(document).ready(function()
 							callback('batch not found!', null);
 						}
 						batchs.splice(mybatchindex, 1);
-						var x2js = new X2JS();
-						var jsonresult = x2js.xml_str2json(result);
-						results.setItem(path, jsonresult);
+						var rawresult = result;
+						if (!zipEntry.name.endsWith('.resource'))
+						{
+							var x2js = new X2JS();
+							rawresult = x2js.xml_str2json(result);
+						}
+						results.setItem(path, rawresult);
 						if (batchs.length == 0)
 						{
 							if (errorhasoccured == false)

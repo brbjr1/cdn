@@ -97,6 +97,10 @@ loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/js/201606090600/xml
 loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/animation/201606141100/jquery-loading-overlay-1.3/src/loadingoverlay.min.js',type:'js'});
 loadurls.push({url:'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css',type:'css'});
 
+//loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/ajv/4.1.3/ajv.min.js',type:'js'});
+loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/5.5.6/jsoneditor.min.css',type:'css'});
+loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/5.5.6/jsoneditor.min.js',type:'js'});
+
 loadresourcesinorder(loadurls, function()
 {
 	var j2$ = jQuery.noConflict();
