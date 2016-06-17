@@ -228,9 +228,8 @@ j$(document).ready(function()
 						        'Authorization': 'Bearer ' + mysessionId,
 						        /*'salesforceproxy-endpoint' : 'https://na17.salesforce.com' + QueryResult.Body*/
 						    },
-				            url: 'https://c.na17.visual.force.com' + QueryResult.Body,
+				            url: 'https://na17.salesforce.com' + QueryResult.Body,
 				            method: 'GET',
-    						dataType: 'String',
 				            success: function(msg) 
 				            {
 				                console.log(msg);
