@@ -50,7 +50,7 @@ if (!String.prototype.endsWith) {
 	{
 		var ort = FindRTPermissions(sobject);
 		var ofp = FindFieldPermissions(sobject);
-		var ofs = FindSobject(sobject);
+		var ofs = FindSobject(RemoteGetObjectInfoResult,sobject);
 		//console.log(ofs);
 		var oheader = '';
 		if (ofs.CusomObjectId)
@@ -189,7 +189,7 @@ if (!String.prototype.endsWith) {
 						tsobjectype = tname;
 					}
 					
-					var tsobject = FindSobject(tsobjectype);
+					var tsobject = FindSobject(RemoteGetObjectInfoResult,tsobjectype);
 					if (tsobject)
 					{
 						mytype += '(<a onclick="ShowObjectModal(&apos;' + tsobject.APIName + '&apos;,&apos;FieldPermissions&apos;);">' + tsobject.Label + '</a>)';
@@ -232,7 +232,7 @@ if (!String.prototype.endsWith) {
 
 			j$.each(ofs.ChildRelatedObjects,function(index, d)
 			{
-				var ofsc= FindSobject(d);
+				var ofsc= FindSobject(RemoteGetObjectInfoResult,d);
 				if (ofsc.fields && ofsc.fields.length > 0)
 				{
 					for (var iofsc1 = 0; iofsc1 < ofsc.fields.length; iofsc1++)
@@ -262,7 +262,7 @@ if (!String.prototype.endsWith) {
 						var fld = ofs.fields[iofs1];
 						if (fld.FieldDescribe.referenceTo == d)
 						{
-							var ofsc= FindSobject(d);
+							var ofsc= FindSobject(RemoteGetObjectInfoResult,d);
 							if (ofsc)
 							{
 								osresult += '<tr>';
@@ -426,18 +426,18 @@ if (!String.prototype.endsWith) {
 			]
 		});
 
-		j$('#OFieldPermissionsTable').DataTable(
+		var fptable = j$('#OFieldPermissionsTable').DataTable(
 		{
 			"scrollCollapse": false,
 			"paging": false,
 			"order": [0, "asc"],
 			"stateSave": true,
 			"searching": true,
-			"stateSaveParams": function (settings, data) 
+			/*"stateSaveParams": function (settings, data) 
             {
                 delete data.search;
                 
-            },
+            },*/
 			"columnDefs": [
 			{
 				"targets": [3, 4],
@@ -446,8 +446,9 @@ if (!String.prototype.endsWith) {
 				"orderDataType": "dom-checkbox-glyphicon"
 			}]
 		});
+		fptable.search('').columns().search('').draw();
 
-		j$('#ORelationPermissionsTable').DataTable(
+		var orptable = j$('#ORelationPermissionsTable').DataTable(
 		{
 			"scrollCollapse": false,
 			"paging": false,
@@ -455,6 +456,7 @@ if (!String.prototype.endsWith) {
 			"stateSave": true,
 			"searching": true
 		});
+		orptable.search('').columns().search('').draw();
 
 		var gotoloc = j$('#GoToLocation').html();
 		if (gotoloc && gotoloc.length > 0)
@@ -757,296 +759,281 @@ j$(document).ready(function()
 																											finalresult.SystemPermissions.push(si);
 																										}
 																									}
-																									DescribeAllSObjects(conn, function(DescribeAllSObjectserr, DescribeAllSObjectsResult,Customtabnames)
+																									myquery = "SELECT Id, FX5__Key_SObject__c, FX5__eForm_SObject__c FROM FX5__eForm_Config__c";
+																									QueryRecords(conn, myquery, function(eFormQueryerr, eFormQueryResults)
 																									{
 																										try
 																										{
-																											if (DescribeAllSObjectserr)
+																											if (eFormQueryerr)
 																											{
-																												console.log('Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
-																												// alert( 'Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
+																												ProcessError('Error:' + PermissionSetQueryerr);
 																											}
-																											//recordTypes
-																											//console.log(DescribeAllSObjectsResult);
-																											var ChildParentRelationships = new HashTable();
-																											var ParentChildRelationships = new HashTable();
-																											var SobjectHT = new HashTable();
-																											var RelatedFXObjectsHT = new HashTable();
-																											j$.each(DescribeAllSObjectsResult, function(index, item)
+																											else
 																											{
-																												var sobjecttype = item.fullName;
-																												if ((sobjecttype.toLowerCase().startsWith('fx5__') || sobjecttype.toLowerCase().startsWith('fxt2__') || sobjecttype == 'Account' || sobjecttype == 'Contact' || sobjecttype == 'User') && item.isCustomSetting == false ) 
+																												var eformsHT = new HashTable();
+																												for (var iefr1 = 0; iefr1 < eFormQueryResults.length; iefr1++)
 																												{
-																													RelatedFXObjectsHT.setItem(sobjecttype, item);
-																													var fieldresults = GetFieldResults(item);
-																													var recordTyperesults = GetRecordTypeResults(item,myUser.ProfileId, searchprofilename);
-																													var TabPerms = GetTabResults(item);
-																													var s1 = {
-																														APIName: sobjecttype,
-																														HasCreate: false,
-																														HasCreateGrantedBy: [],
-																														HasDelete: false,
-																														HasDeleteGrantedBy: [],
-																														HasEdit: false,
-																														HasEditGrantedBy: [],
-																														HasModifyAll: false,
-																														HasModifyAllGrantedBy: [],
-																														HasRead: false,
-																														HasReadGrantedBy: [],
-																														HasViewAll: false,
-																														HasViewAllGrantedBy: [],
-																														Label: item.label,
-																														OneFieldIsPermissionable: item.OneFieldIsPermissionable,
-																														fields: fieldresults,
-																														recordtypes: recordTyperesults,
-																														/*isCustom: false,*/
-																														isCustomSetting: false,
-																														CusomObjectId: item.CusomObjectId,
-																														ObjectDescribe: item,
-																														IsPermissionable: item.IsPermissionable,
-																														TabPermissions : TabPerms,
-																														ChildRelatedObjects:[],
-																														ParentRelatedObjects:[]
+																													var eformresult = eFormQueryResults[iefr1];
+																													eformsHT.setItem(eformresult.FX5__eForm_SObject__c, eformresult.FX5__Key_SObject__c);
+																												}
 
-																													};
-																													finalresult.FXObjects.push(s1);
-																													searchObjects.push(sobjecttype);
-																												}
-																												SobjectHT.setItem(sobjecttype, item);
-																												var myparents = [];
-																												var myfields = GetDescribeSObjectField(item.fields);
-																												for (var ifld1 = 0; ifld1 < myfields.length; ifld1++)
+																												DescribeAllSObjects(conn, function(DescribeAllSObjectserr, DescribeAllSObjectsResult,Customtabnames)
 																												{
-																													var field = myfields[ifld1];
-																													if ((field.type == 'MasterDetail' || field.type == 'Lookup') && field.referenceTo != undefined && field.referenceTo != null)
+																													try
 																													{
-																														if (myparents.indexOf(field.referenceTo) < 0)
+																														if (DescribeAllSObjectserr)
 																														{
-																															myparents.push(field.referenceTo);
+																															console.log('Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
+																															// alert( 'Warning: There was an error Describing objects. Error Details: ' + DescribeAllSObjectserr);
 																														}
-																													}
-																												}
-																												if (myparents.length > 0)
-																												{
-																													ChildParentRelationships.setItem(sobjecttype, myparents);
-																													for (var icpr1 = 0; icpr1 < myparents.length; icpr1++)
-																													{
-																														var myparent = myparents[icpr1];
-																														var mychildern = ParentChildRelationships.hasItem(myparent) ? ParentChildRelationships.getItem(myparent) : [];
-																														if (mychildern.indexOf(sobjecttype) < 0)
+																														//recordTypes
+																														//console.log(DescribeAllSObjectsResult);
+																														var ChildParentRelationships = new HashTable();
+																														var ParentChildRelationships = new HashTable();
+																														var SobjectHT = new HashTable();
+																														var RelatedFXObjectsHT = new HashTable();
+																														j$.each(DescribeAllSObjectsResult, function(index, item)
 																														{
-																															mychildern.push(sobjecttype);
-																														}
-																														if (mychildern.length > 0)
-																														{
-																															ParentChildRelationships.setItem(myparent, mychildern);
-																														}
-																													}
-																												}
-																											});
-																											//console.log(ChildParentRelationships);
-																											var RelatedFXObjectNames = [];
-																											for (var irh1 = 0; irh1 < RelatedFXObjectsHT.keys.length; irh1++)
-																											{
-																												var mykey = RelatedFXObjectsHT.keys[irh1];
-																												var parentname = RelatedFXObjectsHT.getItem(mykey);
-																												if (parentname != undefined)
-																												{
-																													GetRelatedObjects(RelatedFXObjectNames, parentname.fullName, ParentChildRelationships);
-																												}
-																												else
-																												{
-																													var a1 = '';
-																												}
-																											}
-																											//also add object child objects
-																											for (var ipcr1 = 0; ipcr1 < ParentChildRelationships.keys.length; ipcr1++)
-																											{
-																												var mykey = ParentChildRelationships.keys[ipcr1];
-																												var myvalue = ParentChildRelationships.getItem(mykey);
-																												if (myvalue && myvalue.length > 0)
-																												{
-																													for (var imv1 = 0; imv1 < myvalue.length; imv1++)
-																													{
-																														var mychaildname = myvalue[imv1];
-																														if(RelatedFXObjectsHT.hasItem(mychaildname))
-																														{
-																															if (RelatedFXObjectNames.indexOf(mykey) < 0)
+																															var sobjecttype = item.fullName;
+																															if ((sobjecttype.toLowerCase().startsWith('fx5__') || sobjecttype.toLowerCase().startsWith('fxt2__') || sobjecttype == 'Account' || sobjecttype == 'Contact' || sobjecttype == 'User') && item.isCustomSetting == false ) 
 																															{
-																																RelatedFXObjectNames.push(mykey)
-																															}
-																														}
+																																RelatedFXObjectsHT.setItem(sobjecttype, item);
+																																var fieldresults = GetFieldResults(item);
+																																var recordTyperesults = GetRecordTypeResults(item,myUser.ProfileId, searchprofilename);
+																																var TabPerms = GetTabResults(item);
+																																var s1 = {
+																																	APIName: sobjecttype,
+																																	HasCreate: false,
+																																	HasCreateGrantedBy: [],
+																																	HasDelete: false,
+																																	HasDeleteGrantedBy: [],
+																																	HasEdit: false,
+																																	HasEditGrantedBy: [],
+																																	HasModifyAll: false,
+																																	HasModifyAllGrantedBy: [],
+																																	HasRead: false,
+																																	HasReadGrantedBy: [],
+																																	HasViewAll: false,
+																																	HasViewAllGrantedBy: [],
+																																	Label: item.label,
+																																	OneFieldIsPermissionable: item.OneFieldIsPermissionable,
+																																	fields: fieldresults,
+																																	recordtypes: recordTyperesults,
+																																	/*isCustom: false,*/
+																																	isCustomSetting: false,
+																																	CusomObjectId: item.CusomObjectId,
+																																	ObjectDescribe: item,
+																																	IsPermissionable: item.IsPermissionable,
+																																	TabPermissions : TabPerms,
+																																	ChildRelatedObjects:[],
+																																	ParentRelatedObjects:[],
+																																	OneFieldHasSyncId: OneFieldHasSyncId(fieldresults),
+																																	IsEform:eformsHT.hasItem(sobjecttype),
+																																	IsEformChild:false
 
-																													}
-																												}
-																											}
-
-																											//console.log(RelatedFXObjectNames);
-																											for (var ifro1 = 0; ifro1 < RelatedFXObjectNames.length; ifro1++)
-																											{
-																												var RelatedFXObjectName = RelatedFXObjectNames[ifro1];
-																												if (SobjectHT.hasItem(RelatedFXObjectName))
-																												{
-																													var item = SobjectHT.getItem(RelatedFXObjectName);
-																													var sobjecttype = item.fullName;
-																													if (sobjecttype != undefined && RelatedFXObjectsHT.hasItem(sobjecttype) == false && item.isCustomSetting == false)
-																													{
-																														searchObjects.push(sobjecttype);
-																														var fieldresults = GetFieldResults(item);
-																														var recordTyperesults = GetRecordTypeResults(item,myUser.ProfileId, searchprofilename);
-																														var TabPerms = GetTabResults(item);
-																														var s1 = {
-																															APIName: sobjecttype,
-																															HasCreate: false,
-																															HasCreateGrantedBy: [],
-																															HasDelete: false,
-																															HasDeleteGrantedBy: [],
-																															HasEdit: false,
-																															HasEditGrantedBy: [],
-																															HasModifyAll: false,
-																															HasModifyAllGrantedBy: [],
-																															HasRead: false,
-																															HasReadGrantedBy: [],
-																															HasViewAll: false,
-																															HasViewAllGrantedBy: [],
-																															Label: item.label,
-																															OneFieldIsPermissionable: item.OneFieldIsPermissionable,
-																															fields: fieldresults,
-																															recordtypes: recordTyperesults,
-																															/*isCustom: false,*/
-																															isCustomSetting: false,
-																															CusomObjectId: item.CusomObjectId,
-																															ObjectDescribe: item,
-																															IsPermissionable: item.IsPermissionable,
-																															TabPermissions : TabPerms,
-																															ChildRelatedObjects:[],
-																															ParentRelatedObjects:[]
-																														};
-																														finalresult.FXRelatedObjects.push(s1);
-																													}
-																												}
-																											}
-																											//add child and panert ralationshipe
-																											//finalresult.FXObjects
-																											//finalresult.FXRelatedObjects
-																											//	var ChildParentRelationships = new HashTable();
-																											//var ParentChildRelationships = new HashTable();
-																											for (var ifor1 = 0; ifor1 < finalresult.FXObjects.length; ifor1++)
-																											{
-																												var fobj = finalresult.FXObjects[ifor1];
-																												if (ParentChildRelationships.hasItem(fobj.APIName))
-																												{
-																													finalresult.FXObjects[ifor1].ChildRelatedObjects = ParentChildRelationships.getItem(fobj.APIName);
-																												}
-																												if (ChildParentRelationships.hasItem(fobj.APIName))
-																												{
-																													finalresult.FXObjects[ifor1].ParentRelatedObjects = ChildParentRelationships.getItem(fobj.APIName);
-																												}
-																											}
-																											for (var ifor1 = 0; ifor1 < finalresult.FXRelatedObjects.length; ifor1++)
-																											{
-																												var fobj = finalresult.FXRelatedObjects[ifor1];
-																												if (ParentChildRelationships.hasItem(fobj.APIName))
-																												{
-																													finalresult.FXRelatedObjects[ifor1].ChildRelatedObjects = ParentChildRelationships.getItem(fobj.APIName);
-																												}
-																												if (ChildParentRelationships.hasItem(fobj.APIName))
-																												{
-																													finalresult.FXRelatedObjects[ifor1].ParentRelatedObjects = ChildParentRelationships.getItem(fobj.APIName);
-																												}
-																											}
-
-																											myquery = "SELECT Id, Status, IsProvisioned, AllowedLicenses, UsedLicenses, ExpirationDate, CreatedDate, LastModifiedDate, SystemModstamp, NamespacePrefix FROM PackageLicense where NamespacePrefix in('FXMAP','FXJSD','FXTKT','FX5','FXCPQ','FXEAM') and Id in (SELECT  PackageLicenseId FROM UserPackageLicense where UserId ='" + targetUserId + "')";
-																											QueryRecords(conn, myquery, function(PackageLicenseQueryerr, PackageLicenseQueryResults)
-																											{
-																												try
-																												{
-																													if (PackageLicenseQueryerr)
-																													{
-																														ProcessError('Error:' + PackageLicenseQueryerr);
-																													}
-																													else
-																													{
-																														if (PackageLicenseQueryResults != undefined)
-																														{
-																															for (var iplqr1= 0; iplqr1 < PackageLicenseQueryResults.length; iplqr1++)
-																															{
-																																var QueryResult = PackageLicenseQueryResults[iplqr1];
-																																var licinfo = {
-																																	Name: GetLicenseName(QueryResult.NamespacePrefix),
-																																	Id: QueryResult.Id
 																																};
-																																finalresult.PackageLicense.push(licinfo);
+																																finalresult.FXObjects.push(s1);
+																																searchObjects.push(sobjecttype);
+																															}
+																															SobjectHT.setItem(sobjecttype, item);
+																															var myparents = [];
+																															var myfields = GetDescribeSObjectField(item.fields);
+																															for (var ifld1 = 0; ifld1 < myfields.length; ifld1++)
+																															{
+																																var field = myfields[ifld1];
+																																if ((field.type == 'MasterDetail' || field.type == 'Lookup') && field.referenceTo != undefined && field.referenceTo != null)
+																																{
+																																	if (myparents.indexOf(field.referenceTo) < 0)
+																																	{
+																																		myparents.push(field.referenceTo);
+																																	}
+																																}
+																															}
+																															if (myparents.length > 0)
+																															{
+																																ChildParentRelationships.setItem(sobjecttype, myparents);
+																																for (var icpr1 = 0; icpr1 < myparents.length; icpr1++)
+																																{
+																																	var myparent = myparents[icpr1];
+																																	var mychildern = ParentChildRelationships.hasItem(myparent) ? ParentChildRelationships.getItem(myparent) : [];
+																																	if (mychildern.indexOf(sobjecttype) < 0)
+																																	{
+																																		mychildern.push(sobjecttype);
+																																	}
+																																	if (mychildern.length > 0)
+																																	{
+																																		ParentChildRelationships.setItem(myparent, mychildern);
+																																	}
+																																}
+																															}
+																														});
+																														//console.log(ChildParentRelationships);
+																														var RelatedFXObjectNames = [];
+																														for (var irh1 = 0; irh1 < RelatedFXObjectsHT.keys.length; irh1++)
+																														{
+																															var mykey = RelatedFXObjectsHT.keys[irh1];
+																															var parentname = RelatedFXObjectsHT.getItem(mykey);
+																															if (parentname != undefined)
+																															{
+																																GetRelatedObjects(RelatedFXObjectNames, parentname.fullName, ParentChildRelationships);
+																															}
+																															else
+																															{
+																																var a1 = '';
 																															}
 																														}
-																														var profileId = myUser.ProfileId;
-																														var profileName = myUser.Profile.Name;
-																														myquery = "SELECT Id, Name,NamespacePrefix,Status, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( " + searchids + " )) FROM ApexClass";
-																														QueryRecords(conn, myquery, function(ApexClassQueryerr, ApexClassQueryResults)
+																														//also add object child objects
+																														for (var ipcr1 = 0; ipcr1 < ParentChildRelationships.keys.length; ipcr1++)
+																														{
+																															var mykey = ParentChildRelationships.keys[ipcr1];
+																															var myvalue = ParentChildRelationships.getItem(mykey);
+																															if (myvalue && myvalue.length > 0)
+																															{
+																																for (var imv1 = 0; imv1 < myvalue.length; imv1++)
+																																{
+																																	var mychaildname = myvalue[imv1];
+																																	if(RelatedFXObjectsHT.hasItem(mychaildname))
+																																	{
+																																		if (RelatedFXObjectNames.indexOf(mykey) < 0)
+																																		{
+																																			RelatedFXObjectNames.push(mykey)
+																																		}
+																																	}
+
+																																}
+																															}
+																														}
+
+																														//console.log(RelatedFXObjectNames);
+																														for (var ifro1 = 0; ifro1 < RelatedFXObjectNames.length; ifro1++)
+																														{
+																															var RelatedFXObjectName = RelatedFXObjectNames[ifro1];
+																															if (SobjectHT.hasItem(RelatedFXObjectName))
+																															{
+																																var item = SobjectHT.getItem(RelatedFXObjectName);
+																																var sobjecttype = item.fullName;
+																																if (sobjecttype != undefined && RelatedFXObjectsHT.hasItem(sobjecttype) == false && item.isCustomSetting == false)
+																																{
+																																	searchObjects.push(sobjecttype);
+																																	var fieldresults = GetFieldResults(item);
+																																	var recordTyperesults = GetRecordTypeResults(item,myUser.ProfileId, searchprofilename);
+																																	var TabPerms = GetTabResults(item);
+																																	var s1 = {
+																																		APIName: sobjecttype,
+																																		HasCreate: false,
+																																		HasCreateGrantedBy: [],
+																																		HasDelete: false,
+																																		HasDeleteGrantedBy: [],
+																																		HasEdit: false,
+																																		HasEditGrantedBy: [],
+																																		HasModifyAll: false,
+																																		HasModifyAllGrantedBy: [],
+																																		HasRead: false,
+																																		HasReadGrantedBy: [],
+																																		HasViewAll: false,
+																																		HasViewAllGrantedBy: [],
+																																		Label: item.label,
+																																		OneFieldIsPermissionable: item.OneFieldIsPermissionable,
+																																		fields: fieldresults,
+																																		recordtypes: recordTyperesults,
+																																		/*isCustom: false,*/
+																																		isCustomSetting: false,
+																																		CusomObjectId: item.CusomObjectId,
+																																		ObjectDescribe: item,
+																																		IsPermissionable: item.IsPermissionable,
+																																		TabPermissions : TabPerms,
+																																		ChildRelatedObjects:[],
+																																		ParentRelatedObjects:[],
+																																		OneFieldHasSyncId: OneFieldHasSyncId(fieldresults),
+																																		IsEform:eformsHT.hasItem(sobjecttype),
+																																		IsEformChild:false
+																																	};
+																																	finalresult.FXRelatedObjects.push(s1);
+																																}
+																															}
+																														}
+																														//add child and panert ralationshipe
+																														for (var ifor1 = 0; ifor1 < finalresult.FXObjects.length; ifor1++)
+																														{
+																															var fobj = finalresult.FXObjects[ifor1];
+																															if (ParentChildRelationships.hasItem(fobj.APIName))
+																															{
+																																finalresult.FXObjects[ifor1].ChildRelatedObjects = ParentChildRelationships.getItem(fobj.APIName);
+																															}
+																															if (ChildParentRelationships.hasItem(fobj.APIName))
+																															{
+																																finalresult.FXObjects[ifor1].ParentRelatedObjects = ChildParentRelationships.getItem(fobj.APIName);
+																															}
+																														}
+																														for (var ifor1 = 0; ifor1 < finalresult.FXRelatedObjects.length; ifor1++)
+																														{
+																															var fobj = finalresult.FXRelatedObjects[ifor1];
+																															if (ParentChildRelationships.hasItem(fobj.APIName))
+																															{
+																																finalresult.FXRelatedObjects[ifor1].ChildRelatedObjects = ParentChildRelationships.getItem(fobj.APIName);
+																															}
+																															if (ChildParentRelationships.hasItem(fobj.APIName))
+																															{
+																																finalresult.FXRelatedObjects[ifor1].ParentRelatedObjects = ChildParentRelationships.getItem(fobj.APIName);
+																															}
+																														}
+																														for (var ifor2 = 0; ifor2 < finalresult.FXRelatedObjects.length; ifor2++)
+																														{
+																															var fobj = finalresult.FXRelatedObjects[ifor2];
+																															for (var iforc1 = 0; iforc1 < fobj.ParentRelatedObjects.length; iforc1++)
+																															{
+																																var iparname = fobj.ParentRelatedObjects[iforc1];
+																																var ipar = FindSobject(finalresult,iparname);
+																																if (ipar && ipar.IsEform == true)
+																																{
+																																	finalresult.FXRelatedObjects[ifor2].IsEformChild = true;
+																																	break;
+																																}
+																															}
+																														}
+
+
+																														myquery = "SELECT Id, Status, IsProvisioned, AllowedLicenses, UsedLicenses, ExpirationDate, CreatedDate, LastModifiedDate, SystemModstamp, NamespacePrefix FROM PackageLicense where NamespacePrefix in('FXMAP','FXJSD','FXTKT','FX5','FXCPQ','FXEAM') and Id in (SELECT  PackageLicenseId FROM UserPackageLicense where UserId ='" + targetUserId + "')";
+																														QueryRecords(conn, myquery, function(PackageLicenseQueryerr, PackageLicenseQueryResults)
 																														{
 																															try
 																															{
-																																if (ApexClassQueryerr)
+																																if (PackageLicenseQueryerr)
 																																{
-																																	ProcessError('Error:' + ApexClassQueryerr);
+																																	ProcessError('Error:' + PackageLicenseQueryerr);
 																																}
 																																else
 																																{
-																																	if (ApexClassQueryResults != undefined)
+																																	if (PackageLicenseQueryResults != undefined)
 																																	{
-																																		for (var iaqr1 = 0; iaqr1 < ApexClassQueryResults.length; iaqr1++)
+																																		for (var iplqr1= 0; iplqr1 < PackageLicenseQueryResults.length; iplqr1++)
 																																		{
-																																			var QueryResult = ApexClassQueryResults[iaqr1];
-																																			var myname = (QueryResult.NamespacePrefix != null ? QueryResult.NamespacePrefix + '.' + QueryResult.Name : QueryResult.Name).replace(' ', '_');
-																																			var si = {
-																																				GrantedBy: [],
-																																				HasAccess: false,
-																																				Label: myname,
-																																				Name: myname
+																																			var QueryResult = PackageLicenseQueryResults[iplqr1];
+																																			var licinfo = {
+																																				Name: GetLicenseName(QueryResult.NamespacePrefix),
+																																				Id: QueryResult.Id
 																																			};
-																																			if (QueryResult.SetupEntityAccessItems != undefined)
-																																			{
-																																				if (Array.isArray(QueryResult.SetupEntityAccessItems.records))
-																																				{
-																																					for (var isea1 = 0; isea1 < QueryResult.SetupEntityAccessItems.records.length; isea1++)
-																																					{
-																																						var sa = QueryResult.SetupEntityAccessItems.records[isea1];
-																																						si.HasAccess = true;
-																																						var myid = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileId : sa.ParentId;
-																																						var isprofile = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId;
-																																						var myparentname = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileName : perms.getItem(sa.ParentId).Name;
-																																						si.GrantedBy.push(
-																																						{
-																																							Id: myid,
-																																							IsProfile: isprofile,
-																																							Name: myparentname
-																																						});
-																																					}
-																																				}
-																																				else
-																																				{
-																																					Alert('Error 99901');
-																																				}
-																																			}
-																																			finalresult.ApexClassAccess.push(si);
+																																			finalresult.PackageLicense.push(licinfo);
 																																		}
 																																	}
-																																	myquery = "SELECT Id, Name,NamespacePrefix,MasterLabel, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( " + searchids + " )) FROM ApexPage";
-																																	QueryRecords(conn, myquery, function(ApexPageQueryerr, ApexPageQueryResults)
+																																	var profileId = myUser.ProfileId;
+																																	var profileName = myUser.Profile.Name;
+																																	myquery = "SELECT Id, Name,NamespacePrefix,Status, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( " + searchids + " )) FROM ApexClass";
+																																	QueryRecords(conn, myquery, function(ApexClassQueryerr, ApexClassQueryResults)
 																																	{
 																																		try
 																																		{
-																																			if (ApexPageQueryerr)
+																																			if (ApexClassQueryerr)
 																																			{
-																																				ProcessError('Error:' + ApexPageQueryerr);
+																																				ProcessError('Error:' + ApexClassQueryerr);
 																																			}
 																																			else
 																																			{
-																																				if (ApexPageQueryResults != undefined)
+																																				if (ApexClassQueryResults != undefined)
 																																				{
-																																					for (var iapq = 0; iapq < ApexPageQueryResults.length; iapq++)
+																																					for (var iaqr1 = 0; iaqr1 < ApexClassQueryResults.length; iaqr1++)
 																																					{
-																																						var QueryResult = ApexPageQueryResults[iapq];
+																																						var QueryResult = ApexClassQueryResults[iaqr1];
 																																						var myname = (QueryResult.NamespacePrefix != null ? QueryResult.NamespacePrefix + '.' + QueryResult.Name : QueryResult.Name).replace(' ', '_');
 																																						var si = {
 																																							GrantedBy: [],
@@ -1058,9 +1045,9 @@ j$(document).ready(function()
 																																						{
 																																							if (Array.isArray(QueryResult.SetupEntityAccessItems.records))
 																																							{
-																																								for (var iapq2 = 0; iapq2 < QueryResult.SetupEntityAccessItems.records.length; iapq2++)
+																																								for (var isea1 = 0; isea1 < QueryResult.SetupEntityAccessItems.records.length; isea1++)
 																																								{
-																																									var sa = QueryResult.SetupEntityAccessItems.records[iapq2];
+																																									var sa = QueryResult.SetupEntityAccessItems.records[isea1];
 																																									si.HasAccess = true;
 																																									var myid = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileId : sa.ParentId;
 																																									var isprofile = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId;
@@ -1075,250 +1062,309 @@ j$(document).ready(function()
 																																							}
 																																							else
 																																							{
-																																								Alert('Error 99902');
+																																								Alert('Error 99901');
 																																							}
 																																						}
-																																						finalresult.VFPageAccess.push(si);
+																																						finalresult.ApexClassAccess.push(si);
 																																					}
 																																				}
-																																				ProcessFinalResult(finalresult, 1, function(result)
-																																				{
-																																					loadphase = 2;
-																																					j$("#pagediv").LoadingOverlay("hide", true);
-																																					j$("#UserDetails").LoadingOverlay("hide", true);
-																																				    //j$("#FXObjectPermissions").LoadingOverlay("hide", true);
-																																				    //j$("#FXRelatedObjectPermissions").LoadingOverlay("hide", true);
-																																				    j$("#ApexClasses").LoadingOverlay("hide", true);
-																																				    j$("#VisualforcePages").LoadingOverlay("hide", true);
-																																				    j$("#SystemPermissions").LoadingOverlay("hide", true);
-																																				    //j$("#Warnings").LoadingOverlay("hide", true);
-																																				});
-																																				var mypackage = {
-																																					'types': [],
-																																					'version': jsforceAPIVersion
-																																				};
-																																				mypackage.types.push(
-																																				{
-																																					'members': MetaDataApiName(searchprofilename),
-																																					'name': 'Profile'
-																																				});
-																																				mypackage.types.push(
-																																				{
-																																					'members': '*',
-																																					'name': 'CustomField'
-																																				});
-																																				mypackage.types.push(
-																																				{
-																																					'members': searchObjects,
-																																					'name': 'CustomObject'
-																																				});
-
-																																				var searchTabs = searchObjects;
-
-																																				if(Customtabnames)
-																																				{
-																																					for (var itab = 0; itab < Customtabnames.length; itab++)
-																																					{
-																																						var Customtabname = Customtabnames[itab];
-																																						if (searchTabs.indexOf(Customtabname) < 0)
-																																						{
-																																							searchTabs.push(Customtabname);
-																																						}
-																																					}
-																																				}
-
-																																				//searchObjects.push('standard-Account');
-																																				//searchObjects.push('standard-Contact');
-																																				//searchObjects.push('standard-User');
-																																				mypackage.types.push(
-																																				{
-																																					'members': searchTabs,
-																																					'name': 'CustomTab'
-																																				});
-																																				if (searchPermissionSetnames.length > 0)
-																																				{
-																																					mypackage.types.push(
-																																					{
-																																						'members': searchPermissionSetnames,
-																																						'name': 'PermissionSet'
-																																					});
-																																				}
-																																				conn.metadata.retrieve(
-																																				{
-																																					unpackaged: mypackage
-																																				}, function(retreiveerr, retreivemetadata)
+																																				myquery = "SELECT Id, Name,NamespacePrefix,MasterLabel, (SELECT Id, ParentId,SetupEntityId FROM SetupEntityAccessItems where ParentId in ( " + searchids + " )) FROM ApexPage";
+																																				QueryRecords(conn, myquery, function(ApexPageQueryerr, ApexPageQueryResults)
 																																				{
 																																					try
 																																					{
-																																						if (retreiveerr)
+																																						if (ApexPageQueryerr)
 																																						{
-																																							ProcessError(retreiveerr);
+																																							ProcessError('Error:' + ApexPageQueryerr);
 																																						}
 																																						else
 																																						{
-																																							DocheckRetrieveStatus(conn, retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult)
+																																							if (ApexPageQueryResults != undefined)
+																																							{
+																																								for (var iapq = 0; iapq < ApexPageQueryResults.length; iapq++)
+																																								{
+																																									var QueryResult = ApexPageQueryResults[iapq];
+																																									var myname = (QueryResult.NamespacePrefix != null ? QueryResult.NamespacePrefix + '.' + QueryResult.Name : QueryResult.Name).replace(' ', '_');
+																																									var si = {
+																																										GrantedBy: [],
+																																										HasAccess: false,
+																																										Label: myname,
+																																										Name: myname
+																																									};
+																																									if (QueryResult.SetupEntityAccessItems != undefined)
+																																									{
+																																										if (Array.isArray(QueryResult.SetupEntityAccessItems.records))
+																																										{
+																																											for (var iapq2 = 0; iapq2 < QueryResult.SetupEntityAccessItems.records.length; iapq2++)
+																																											{
+																																												var sa = QueryResult.SetupEntityAccessItems.records[iapq2];
+																																												si.HasAccess = true;
+																																												var myid = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileId : sa.ParentId;
+																																												var isprofile = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId;
+																																												var myparentname = sa.ParentId == profileId || sa.ParentId == ProfilePermissionSetId ? profileName : perms.getItem(sa.ParentId).Name;
+																																												si.GrantedBy.push(
+																																												{
+																																													Id: myid,
+																																													IsProfile: isprofile,
+																																													Name: myparentname
+																																												});
+																																											}
+																																										}
+																																										else
+																																										{
+																																											Alert('Error 99902');
+																																										}
+																																									}
+																																									finalresult.VFPageAccess.push(si);
+																																								}
+																																							}
+																																							ProcessFinalResult(finalresult, 1, function(result)
+																																							{
+																																								loadphase = 2;
+																																								j$("#pagediv").LoadingOverlay("hide", true);
+																																								j$("#UserDetails").LoadingOverlay("hide", true);
+																																							    //j$("#FXObjectPermissions").LoadingOverlay("hide", true);
+																																							    //j$("#FXRelatedObjectPermissions").LoadingOverlay("hide", true);
+																																							    j$("#ApexClasses").LoadingOverlay("hide", true);
+																																							    j$("#VisualforcePages").LoadingOverlay("hide", true);
+																																							    j$("#SystemPermissions").LoadingOverlay("hide", true);
+																																							    //j$("#Warnings").LoadingOverlay("hide", true);
+																																							});
+																																							var mypackage = {
+																																								'types': [],
+																																								'version': jsforceAPIVersion
+																																							};
+																																							mypackage.types.push(
+																																							{
+																																								'members': MetaDataApiName(searchprofilename),
+																																								'name': 'Profile'
+																																							});
+																																							mypackage.types.push(
+																																							{
+																																								'members': '*',
+																																								'name': 'CustomField'
+																																							});
+																																							mypackage.types.push(
+																																							{
+																																								'members': searchObjects,
+																																								'name': 'CustomObject'
+																																							});
+
+																																							var searchTabs = searchObjects;
+
+																																							if(Customtabnames)
+																																							{
+																																								for (var itab = 0; itab < Customtabnames.length; itab++)
+																																								{
+																																									var Customtabname = Customtabnames[itab];
+																																									if (searchTabs.indexOf(Customtabname) < 0)
+																																									{
+																																										searchTabs.push(Customtabname);
+																																									}
+																																								}
+																																							}
+
+																																							//searchObjects.push('standard-Account');
+																																							//searchObjects.push('standard-Contact');
+																																							//searchObjects.push('standard-User');
+																																							mypackage.types.push(
+																																							{
+																																								'members': searchTabs,
+																																								'name': 'CustomTab'
+																																							});
+																																							if (searchPermissionSetnames.length > 0)
+																																							{
+																																								mypackage.types.push(
+																																								{
+																																									'members': searchPermissionSetnames,
+																																									'name': 'PermissionSet'
+																																								});
+																																							}
+																																							conn.metadata.retrieve(
+																																							{
+																																								unpackaged: mypackage
+																																							}, function(retreiveerr, retreivemetadata)
 																																							{
 																																								try
 																																								{
-																																									if (retreivemetadataresulterr)
+																																									if (retreiveerr)
 																																									{
-																																										ProcessError(retreivemetadataresulterr);
+																																										ProcessError(retreiveerr);
 																																									}
 																																									else
 																																									{
-																																										AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile, function(zipresultserr, zipresults)
+																																										DocheckRetrieveStatus(conn, retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult)
 																																										{
 																																											try
 																																											{
-																																												if (zipresultserr)
+																																												if (retreivemetadataresulterr)
 																																												{
-																																													ProcessError(zipresultserr);
+																																													ProcessError(retreivemetadataresulterr);
 																																												}
 																																												else
 																																												{
-
-																																													//console.log(zipresults);
-																																													for (var iobj = 0; iobj < finalresult.FXRelatedObjects.length; iobj++)
+																																													AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile, function(zipresultserr, zipresults)
 																																													{
-																																														var tobj = finalresult.FXRelatedObjects[iobj];
-																																														if (tobj.ObjectDescribe.IsCustomTab == true)
+																																														try
 																																														{
-																																															var metatabname = 'unpackaged/tabs/' + tobj.ObjectDescribe.fullName + '.tab';
-																																															if (zipresults.hasItem(metatabname) == true)
+																																															if (zipresultserr)
 																																															{
-																																																var mydetail = zipresults.getItem(metatabname);
-																																																if(mydetail.CustomTab.label)
-																																																{
-																																																	finalresult.FXRelatedObjects[iobj].Label = mydetail.CustomTab.label;
-																																																}
-																																															}
-																																														}
-																																													}
-
-																																													for (var iobj = 0; iobj < finalresult.FXObjects.length; iobj++)
-																																													{
-																																														var tobj = finalresult.FXObjects[iobj];
-																																														if (tobj.ObjectDescribe.IsCustomTab == true)
-																																														{
-																																															var metatabname = 'unpackaged/tabs/' + tobj.ObjectDescribe.fullName + '.tab';
-																																															if (zipresults.hasItem(metatabname) == true)
-																																															{
-																																																var mydetail = zipresults.getItem(metatabname);
-																																																if(mydetail.CustomTab.label)
-																																																{
-																																																	finalresult.FXObjects[iobj].Label = mydetail.CustomTab.label;
-																																																}
-																																															}
-																																														}
-																																													}
-
-
-																																													//add results for profile
-																																													var profilepackagename = 'unpackaged/profiles/' + MetaDataApiName(searchprofilename).replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.profile';
-																																													if (zipresults.hasItem(profilepackagename) == true)
-																																													{
-																																														var mydetail = zipresults.getItem(profilepackagename);
-																																														if (mydetail.Profile.fieldPermissions != undefined)
-																																														{
-																																															for (var impf = 0; impf < mydetail.Profile.fieldPermissions.length; impf++)
-																																															{
-																																																var mypermission2 = mydetail.Profile.fieldPermissions[impf];
-																																																SetFeildResult(mypermission2, myUser.ProfileId, finalresult, searchprofilename, true);
-																																															}
-																																														}
-																																														if (mydetail.Profile.objectPermissions != undefined)
-																																														{
-																																															for (var impo = 0; impo < mydetail.Profile.objectPermissions.length; impo++)
-																																															{
-																																																var mypermission2 = mydetail.Profile.objectPermissions[impo];
-																																																SetObjectResult(mypermission2, myUser.ProfileId, finalresult, searchprofilename, true);
-																																															}
-																																														}
-																																														if (mydetail.Profile.recordTypeVisibilities)
-																																														{
-																																															for (var impr = 0; impr < mydetail.Profile.recordTypeVisibilities.length; impr++)
-																																															{
-																																																var myrtvis = mydetail.Profile.recordTypeVisibilities[impr];
-																																																SetRecordTypeResult(myrtvis, myUser.ProfileId, finalresult, searchprofilename, true);
-																																															}
-																																														}
-																																														
-																																														if (mydetail.Profile.tabVisibilities)
-																																														{
-																																															for (var impt = 0; impt < mydetail.Profile.tabVisibilities.length; impt++)
-																																															{
-																																																var mytabvis = mydetail.Profile.tabVisibilities[impt];
-																																																SetTabPermissionResult(mytabvis, myUser.ProfileId, finalresult, searchprofilename, true);
-																																															}
-																																														}
-																																														
-																																													}
-																																													else
-																																													{
-																																														console.log('Error Metadata not found for ' + profilepackagename);
-																																														alert('Error 99908');
-																																													}
-																																													if (PermissionSetQueryResults != undefined)
-																																													{
-																																														for (var ipr44 = 0; ipr44 < PermissionSetQueryResults.length; ipr44++)
-																																														{
-																																															var QueryResult = PermissionSetQueryResults[ipr44];
-																																															var permname = (QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '') + QueryResult.Name;
-																																															(QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '') + QueryResult.Name;
-																																															var permpackagename = 'unpackaged/permissionsets/' + permname.replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.permissionset';
-																																															if (zipresults.hasItem(permpackagename) == true)
-																																															{
-																																																var mydetail = zipresults.getItem(permpackagename);
-																																																if (mydetail.PermissionSet.fieldPermissions != undefined)
-																																																{
-																																																	for (var impf2 = 0; impf2 < mydetail.PermissionSet.fieldPermissions.length; impf2++)
-																																																	{
-																																																		var mypermission2 = mydetail.PermissionSet.fieldPermissions[impf2];
-																																																		SetFeildResult(mypermission2, QueryResult.Id, finalresult, QueryResult.Name, false);
-																																																	}
-																																																}
-																																																if (mydetail.PermissionSet.objectPermissions != undefined)
-																																																{
-																																																	for (var impo2 = 0; impo2 < mydetail.PermissionSet.objectPermissions.length; impo2++)
-																																																	{
-																																																		var mypermission2 = mydetail.PermissionSet.objectPermissions[impo2];
-																																																		SetObjectResult(mypermission2, QueryResult.Id, finalresult, QueryResult.Name, false);
-																																																	}
-																																																}
-																																																if (mydetail.PermissionSet.recordTypeVisibilities)
-																																																{
-																																																	for (var impr2 = 0; impr2 < mydetail.PermissionSet.recordTypeVisibilities.length; impr2++)
-																																																	{
-																																																		var myrtvis = mydetail.PermissionSet.recordTypeVisibilities[impr2];
-																																																		SetRecordTypeResult(myrtvis, QueryResult.Id, finalresult, QueryResult.Name, false);
-																																																	}
-																																																}
-																																																if (mydetail.PermissionSet.tabSettings)
-																																																{
-																																																	for (var impt2 = 0; impt2 < mydetail.PermissionSet.tabSettings.length; impt2++)
-																																																	{
-																																																		var mytabvis = mydetail.PermissionSet.tabSettings[impt2];
-																																																		SetTabPermissionResult(mytabvis, QueryResult.Id, finalresult, QueryResult.Name, false);
-																																																	}
-																																																}
+																																																ProcessError(zipresultserr);
 																																															}
 																																															else
 																																															{
-																																																console.log('Error Metadata not found for ' + permpackagename);
-																																																alert('Error 99909');
+
+																																																//console.log(zipresults);
+																																																for (var iobj = 0; iobj < finalresult.FXRelatedObjects.length; iobj++)
+																																																{
+																																																	var tobj = finalresult.FXRelatedObjects[iobj];
+																																																	if (tobj.ObjectDescribe.IsCustomTab == true)
+																																																	{
+																																																		var metatabname = 'unpackaged/tabs/' + tobj.ObjectDescribe.fullName + '.tab';
+																																																		if (zipresults.hasItem(metatabname) == true)
+																																																		{
+																																																			var mydetail = zipresults.getItem(metatabname);
+																																																			if(mydetail.CustomTab.label)
+																																																			{
+																																																				finalresult.FXRelatedObjects[iobj].Label = mydetail.CustomTab.label;
+																																																			}
+																																																		}
+																																																	}
+																																																}
+
+																																																for (var iobj = 0; iobj < finalresult.FXObjects.length; iobj++)
+																																																{
+																																																	var tobj = finalresult.FXObjects[iobj];
+																																																	if (tobj.ObjectDescribe.IsCustomTab == true)
+																																																	{
+																																																		var metatabname = 'unpackaged/tabs/' + tobj.ObjectDescribe.fullName + '.tab';
+																																																		if (zipresults.hasItem(metatabname) == true)
+																																																		{
+																																																			var mydetail = zipresults.getItem(metatabname);
+																																																			if(mydetail.CustomTab.label)
+																																																			{
+																																																				finalresult.FXObjects[iobj].Label = mydetail.CustomTab.label;
+																																																			}
+																																																		}
+																																																	}
+																																																}
+
+
+																																																//add results for profile
+																																																var profilepackagename = 'unpackaged/profiles/' + MetaDataApiName(searchprofilename).replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.profile';
+																																																if (zipresults.hasItem(profilepackagename) == true)
+																																																{
+																																																	var mydetail = zipresults.getItem(profilepackagename);
+																																																	if (mydetail.Profile.fieldPermissions != undefined)
+																																																	{
+																																																		for (var impf = 0; impf < mydetail.Profile.fieldPermissions.length; impf++)
+																																																		{
+																																																			var mypermission2 = mydetail.Profile.fieldPermissions[impf];
+																																																			SetFeildResult(mypermission2, myUser.ProfileId, finalresult, searchprofilename, true);
+																																																		}
+																																																	}
+																																																	if (mydetail.Profile.objectPermissions != undefined)
+																																																	{
+																																																		for (var impo = 0; impo < mydetail.Profile.objectPermissions.length; impo++)
+																																																		{
+																																																			var mypermission2 = mydetail.Profile.objectPermissions[impo];
+																																																			SetObjectResult(mypermission2, myUser.ProfileId, finalresult, searchprofilename, true);
+																																																		}
+																																																	}
+																																																	if (mydetail.Profile.recordTypeVisibilities)
+																																																	{
+																																																		for (var impr = 0; impr < mydetail.Profile.recordTypeVisibilities.length; impr++)
+																																																		{
+																																																			var myrtvis = mydetail.Profile.recordTypeVisibilities[impr];
+																																																			SetRecordTypeResult(myrtvis, myUser.ProfileId, finalresult, searchprofilename, true);
+																																																		}
+																																																	}
+																																																	
+																																																	if (mydetail.Profile.tabVisibilities)
+																																																	{
+																																																		for (var impt = 0; impt < mydetail.Profile.tabVisibilities.length; impt++)
+																																																		{
+																																																			var mytabvis = mydetail.Profile.tabVisibilities[impt];
+																																																			SetTabPermissionResult(mytabvis, myUser.ProfileId, finalresult, searchprofilename, true);
+																																																		}
+																																																	}
+																																																	
+																																																}
+																																																else
+																																																{
+																																																	console.log('Error Metadata not found for ' + profilepackagename);
+																																																	alert('Error 99908');
+																																																}
+																																																if (PermissionSetQueryResults != undefined)
+																																																{
+																																																	for (var ipr44 = 0; ipr44 < PermissionSetQueryResults.length; ipr44++)
+																																																	{
+																																																		var QueryResult = PermissionSetQueryResults[ipr44];
+																																																		var permname = (QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '') + QueryResult.Name;
+																																																		(QueryResult.NamespacePrefix != undefined && QueryResult.NamespacePrefix.length > 0 ? QueryResult.NamespacePrefix + '__' : '') + QueryResult.Name;
+																																																		var permpackagename = 'unpackaged/permissionsets/' + permname.replace(".", "%2E").replace("(", "%28").replace(")", "%29").replace("/", "%2F") + '.permissionset';
+																																																		if (zipresults.hasItem(permpackagename) == true)
+																																																		{
+																																																			var mydetail = zipresults.getItem(permpackagename);
+																																																			if (mydetail.PermissionSet.fieldPermissions != undefined)
+																																																			{
+																																																				for (var impf2 = 0; impf2 < mydetail.PermissionSet.fieldPermissions.length; impf2++)
+																																																				{
+																																																					var mypermission2 = mydetail.PermissionSet.fieldPermissions[impf2];
+																																																					SetFeildResult(mypermission2, QueryResult.Id, finalresult, QueryResult.Name, false);
+																																																				}
+																																																			}
+																																																			if (mydetail.PermissionSet.objectPermissions != undefined)
+																																																			{
+																																																				for (var impo2 = 0; impo2 < mydetail.PermissionSet.objectPermissions.length; impo2++)
+																																																				{
+																																																					var mypermission2 = mydetail.PermissionSet.objectPermissions[impo2];
+																																																					SetObjectResult(mypermission2, QueryResult.Id, finalresult, QueryResult.Name, false);
+																																																				}
+																																																			}
+																																																			if (mydetail.PermissionSet.recordTypeVisibilities)
+																																																			{
+																																																				for (var impr2 = 0; impr2 < mydetail.PermissionSet.recordTypeVisibilities.length; impr2++)
+																																																				{
+																																																					var myrtvis = mydetail.PermissionSet.recordTypeVisibilities[impr2];
+																																																					SetRecordTypeResult(myrtvis, QueryResult.Id, finalresult, QueryResult.Name, false);
+																																																				}
+																																																			}
+																																																			if (mydetail.PermissionSet.tabSettings)
+																																																			{
+																																																				for (var impt2 = 0; impt2 < mydetail.PermissionSet.tabSettings.length; impt2++)
+																																																				{
+																																																					var mytabvis = mydetail.PermissionSet.tabSettings[impt2];
+																																																					SetTabPermissionResult(mytabvis, QueryResult.Id, finalresult, QueryResult.Name, false);
+																																																				}
+																																																			}
+																																																		}
+																																																		else
+																																																		{
+																																																			console.log('Error Metadata not found for ' + permpackagename);
+																																																			alert('Error 99909');
+																																																		}
+																																																	}
+																																																}
+																																																ProcessFinalResult(finalresult, 2, function(result)
+																																																{
+																																																	loadphase = 3
+																																																	//j$("#UserDetails").LoadingOverlay("hide", true);
+																																																    j$("#FXObjectPermissions").LoadingOverlay("hide", true);
+																																																    j$("#FXRelatedObjectPermissions").LoadingOverlay("hide", true);
+																																																    //j$("#ApexClasses").LoadingOverlay("hide", true);
+																																																    //j$("#VisualforcePages").LoadingOverlay("hide", true);
+																																																    //j$("#SystemPermissions").LoadingOverlay("hide", true);
+																																																    j$("#Warnings").LoadingOverlay("hide", true);
+																																																});
 																																															}
 																																														}
-																																													}
-																																													ProcessFinalResult(finalresult, 2, function(result)
-																																													{
-																																														loadphase = 3
-																																														//j$("#UserDetails").LoadingOverlay("hide", true);
-																																													    j$("#FXObjectPermissions").LoadingOverlay("hide", true);
-																																													    j$("#FXRelatedObjectPermissions").LoadingOverlay("hide", true);
-																																													    //j$("#ApexClasses").LoadingOverlay("hide", true);
-																																													    //j$("#VisualforcePages").LoadingOverlay("hide", true);
-																																													    //j$("#SystemPermissions").LoadingOverlay("hide", true);
-																																													    j$("#Warnings").LoadingOverlay("hide", true);
+																																														catch (err)
+																																														{
+																																															console.log(err);
+																																															ProcessError(err);
+																																															throw err;
+																																														}
 																																													});
 																																												}
 																																											}
@@ -1366,14 +1412,14 @@ j$(document).ready(function()
 																															}
 																														});
 																													}
-																												}
-																												catch (err)
-																												{
-																													console.log(err);
-																													ProcessError(err);
-																													throw err;
-																												}
-																											});
+																													catch (err)
+																													{
+																														console.log(err);
+																														ProcessError(err);
+																														throw err;
+																													}
+																												});
+																											}
 																										}
 																										catch (err)
 																										{
@@ -1382,6 +1428,7 @@ j$(document).ready(function()
 																											throw err;
 																										}
 																									});
+
 																								}
 																							}
 																							catch (err)
@@ -1546,7 +1593,7 @@ j$(document).ready(function()
 				datatableApexClassesresult += '</tbody>';
 				datatableApexClassesresult += '</table>';
 				j$('#fxApexClassestable').html(datatableApexClassesresult);
-				j$('#ApexClassesTable').DataTable(
+				var actable = j$('#ApexClassesTable').DataTable(
 				{
 					"scrollCollapse": true,
 					"paging": false,
@@ -1565,6 +1612,7 @@ j$(document).ready(function()
 						"width": "350px"
 					}]
 				});
+				actable.search('').columns().search('').draw();
 			}
 			var datatableVisualforcePagesresult = '';
 			if (result.VFPageAccess != undefined)
@@ -1584,7 +1632,7 @@ j$(document).ready(function()
 				datatableVisualforcePagesresult += '</tbody>';
 				datatableVisualforcePagesresult += '</table>';
 				j$('#fxVisualforcePagestable').html(datatableVisualforcePagesresult);
-				j$('#VisualforcePagesTable').DataTable(
+				var vptable = j$('#VisualforcePagesTable').DataTable(
 				{
 					"scrollCollapse": true,
 					"paging": false,
@@ -1603,6 +1651,7 @@ j$(document).ready(function()
 						"width": "350px"
 					}]
 				});
+				vptable.search('').columns().search('').draw();
 			}
 			var datatableSystemPermissionsresult = '';
 			if (result.SystemPermissions != undefined)
@@ -1623,7 +1672,7 @@ j$(document).ready(function()
 				datatableSystemPermissionsresult += '</table>';
 				j$('#FXSystemPermissionsTable').html(datatableSystemPermissionsresult);
 				//j$('[data-toggle="popover"]').popover({container: 'body'});  
-				j$('#SystemPermissionsTable').DataTable(
+				var sptable = j$('#SystemPermissionsTable').DataTable(
 				{
 					"scrollCollapse": true,
 					"paging": false,
@@ -1642,6 +1691,7 @@ j$(document).ready(function()
 						"width": "350px"
 					}]
 				});
+				sptable.search('').columns().search('').draw();
 			}
 			var FXApexClassesWarningshtml = '';
 			if (result.ApexClassAccess != undefined)
@@ -1718,7 +1768,19 @@ j$(document).ready(function()
 					});
 				});
 			}
-			j$('#FXObjectWarnings').html(FXObjectWarningshtml);
+			var FXEformObjectWarningshtml = '';
+			if (result.FXObjects != undefined)
+			{
+				j$.each(result.FXRelatedObjects, function(index, d)
+				{
+					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == false)
+					{
+						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form Object ' + d.APIName + ' does not have a SyncId__c field that is marked as a unique external id .</p>';
+					}
+				});
+			}
+
+			j$('#FXEFormObjectWarnings').html(FXEformObjectWarningshtml);
 			callback(true);
 		}
 		else if (pass == 2)
@@ -1794,7 +1856,7 @@ j$(document).ready(function()
 				datatableFXObjectsresult += '</tbody>';
 				datatableFXObjectsresult += '</table>';
 				j$('#fxobjectpermissiontable').html(datatableFXObjectsresult);
-				j$('#FXObjectsTable').DataTable(
+				var optable = j$('#FXObjectsTable').DataTable(
 				{
 					"scrollCollapse": true,
 					"paging": false,
@@ -1809,6 +1871,7 @@ j$(document).ready(function()
 						"orderDataType": "dom-checkbox-glyphicon"
 					}]
 				});
+				optable.search('').columns().search('').draw();
 			}
 			var datatableFXRelatedObjectsresult = '';
 			if (result.FXRelatedObjects != undefined)
@@ -1881,7 +1944,7 @@ j$(document).ready(function()
 				datatableFXRelatedObjectsresult += '</tbody>';
 				datatableFXRelatedObjectsresult += '</table>';
 				j$('#fxRelatedobjectpermissiontable').html(datatableFXRelatedObjectsresult);
-				j$('#FXRelatedObjectsTable').DataTable(
+				var oprtable = j$('#FXRelatedObjectsTable').DataTable(
 				{
 					"scrollCollapse": true,
 					"paging": false,
@@ -1896,6 +1959,7 @@ j$(document).ready(function()
 						"orderDataType": "dom-checkbox-glyphicon"
 					}]
 				});
+				oprtable.search('').columns().search('').draw();
 			}
 			callback(true);
 		}
@@ -1934,14 +1998,14 @@ j$(document).ready(function()
 		return result;
 	}
 
-	function FindSobject(sobject)
+	function FindSobject(results, sobject)
 	{
 		var result;
-		if (RemoteGetObjectInfoResult != undefined)
+		if (results != undefined)
 		{
-			if (RemoteGetObjectInfoResult.FXObjects != undefined)
+			if (results.FXObjects != undefined)
 			{
-				j$.each(RemoteGetObjectInfoResult.FXObjects,
+				j$.each(results.FXObjects,
 					function(index, d)
 					{
 						if (d.APIName == sobject)
@@ -1951,9 +2015,9 @@ j$(document).ready(function()
 					}
 				);
 			}
-			if (result == undefined && RemoteGetObjectInfoResult.FXRelatedObjects != undefined)
+			if (result == undefined && results.FXRelatedObjects != undefined)
 			{
-				j$.each(RemoteGetObjectInfoResult.FXRelatedObjects,
+				j$.each(results.FXRelatedObjects,
 					function(index, d)
 					{
 						if (d.APIName == sobject)
@@ -1966,6 +2030,8 @@ j$(document).ready(function()
 		}
 		return result;
 	}
+
+
 
 	function FindRTPermissions(sobject)
 	{
@@ -2766,10 +2832,6 @@ j$(document).ready(function()
 						GetRelatedObjects(results, childname, ParentChildernRelationships);
 					}
 				}
-				else
-				{
-					var a1 = '';
-				}
 			}
 		}
 	}
@@ -2816,6 +2878,22 @@ j$(document).ready(function()
 		}
 		return fieldresults;
 	}
+
+	function OneFieldHasSyncId(fieldresults)
+	{
+		var result = false;
+		for (var i = 0; i < fieldresults.length; i++)
+		{
+			var field = fieldresults[i];
+			if (field.Name == 'SyncId__c' && field.FieldDescribe.externalId == 'true' && field.FieldDescribe.unique == 'true' && field.FieldDescribe.type == 'Text')
+			{
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
+	
 
 	function GetRecordTypeResults(item,userProfileId, profilename)
 	{
