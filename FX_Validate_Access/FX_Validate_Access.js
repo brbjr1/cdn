@@ -17,6 +17,7 @@ validversions.push('15');
 validversions.push('16');
 validversions.push('17');
 validversions.push('18');
+validversions.push('19');
 var myversion ='18'; //update to latest to change version
 var mysessionId = '';
 
