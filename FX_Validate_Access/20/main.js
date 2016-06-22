@@ -1762,7 +1762,7 @@ j$(document).ready(function()
 							var isduplicate = j$.inArray('FX5__' + f.Name, FX5Fields);
 							if (isduplicate >= 0)
 							{
-								FXObjectWarningshtml += '<p>Object ' + d.Label + ' (' + d.APIName + ') Field ' + f.Name + ' is a duplicate of a managed package field.</p>';
+								FXObjectWarningshtml += '<p>Object <b>' + d.Label + ' (' + d.APIName + ')</b> Field <b>' + f.Name + '</b> is a duplicate of a managed package field.</p>';
 							}
 						}
 					});
@@ -1956,7 +1956,7 @@ j$(document).ready(function()
 				{
 					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == false)
 					{
-						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object ' + d.Label + ' (' + d.APIName + ') does not have a SyncId__c field that is marked as a unique external id .</p>';
+						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object <b>' + d.Label + ' (' + d.APIName + ')</b> does not have a <b>SyncId__c</b> field that is marked as a unique external id .</p>';
 					}
 					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == true && d.HasEdit)
 					{
@@ -1966,7 +1966,7 @@ j$(document).ready(function()
 							{
 								if (f.HasRead == false || f.HasEdit == false)
 								{
-									FXEformObjectWarningshtml += '<p>User has not been granted Read/Edit access to the SyncId__c field on ' + ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object ' + d.Label + ' (' + d.APIName + ').</p>';
+									FXEformObjectWarningshtml += '<p>User has not been granted Read/Edit access to the <b>SyncId__c</b> field on ' + ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 								}
 							}
 						});
@@ -3416,12 +3416,12 @@ j$(document).ready(function()
 			var iexists = j$.inArray('FieldFX Base Package', assigned);
 			if (iexists < 0)
 			{
-				FXhtml += '<p>Ticket User: User has not been granted access to FieldFX Base Package.</p>';
+				FXhtml += '<p>Ticket User: User has not been granted access to <b>FieldFX Base Package</b>.</p>';
 			}
 			var iexists2 = j$.inArray('FieldFX e-Ticketing', assigned);
 			if (iexists2 < 0)
 			{
-				FXhtml += '<p>Ticket User: User has not been granted access to FieldFX e-Ticketing.</p>';
+				FXhtml += '<p>Ticket User: User has not been granted access to <b>FieldFX e-Ticketing</b>.</p>';
 			}
 		}
 		if (isFXmobileCPQ || isFXBackofficeCPQ)
@@ -3429,17 +3429,17 @@ j$(document).ready(function()
 			var iexists = j$.inArray('FieldFX Base Package', assigned);
 			if (iexists < 0)
 			{
-				FXhtml += '<p>CPQ User: User has not been granted access to FieldFX Base Package.</p>';
+				FXhtml += '<p>CPQ User: User has not been granted access to <b>FieldFX Base Package</b>.</p>';
 			}
 			var iexists2 = j$.inArray('FieldFX e-Ticketing', assigned);
 			if (iexists2 < 0)
 			{
-				FXhtml += '<p>CPQ User: User has not been granted access to FieldFX e-Ticketing.</p>';
+				FXhtml += '<p>CPQ User: User has not been granted access to <b>FieldFX e-Ticketing</b>.</p>';
 			}
 			var iexists3 = j$.inArray('FieldFX CPQ', assigned);
 			if (iexists3 < 0)
 			{
-				FXhtml += '<p>CPQ User: User has not been granted access to FieldFX CPQ.</p>';
+				FXhtml += '<p>CPQ User: User has not been granted access to <b>FieldFX CPQ</b>.</p>';
 			}
 		}
 		if (isFXBackOfficeSchedulingAndDispatch)
@@ -3447,17 +3447,17 @@ j$(document).ready(function()
 			var iexists = j$.inArray('FieldFX Base Package', assigned);
 			if (iexists < 0)
 			{
-				FXhtml += '<p>FX Scheduling & Dispatch User: User has not been granted access to FieldFX Base Package.</p>';
+				FXhtml += '<p>FX Scheduling & Dispatch User: User has not been granted access to <b>FieldFX Base Package</b>.</p>';
 			}
 			var iexists2 = j$.inArray('FieldFX e-Ticketing', assigned);
 			if (iexists2 < 0)
 			{
-				FXhtml += '<p>FX Scheduling & Dispatch User: User has not been granted access to FieldFX e-Ticketing.</p>';
+				FXhtml += '<p>FX Scheduling & Dispatch User: User has not been granted access to <b>FieldFX e-Ticketing</b>.</p>';
 			}
 			var iexists3 = j$.inArray('FieldFX Job Scheduling & Dispatch', assigned);
 			if (iexists3 < 0)
 			{
-				FXhtml += '<p>FX Scheduling & Dispatch User: User has not been granted access to FieldFX Job Scheduling & Dispatch.</p>';
+				FXhtml += '<p>FX Scheduling & Dispatch User: User has not been granted access to <b>FieldFX Job Scheduling & Dispatch</b>.</p>';
 			}
 		}
 		if (isEAM)
@@ -3465,12 +3465,12 @@ j$(document).ready(function()
 			var iexists = j$.inArray('FieldFX Base Package', assigned);
 			if (iexists < 0)
 			{
-				FXhtml += '<p>EAM User: User has not been granted access to FieldFX Base Package.</p>';
+				FXhtml += '<p>EAM User: User has not been granted access to <b>FieldFX Base Package</b>.</p>';
 			}
 			var iexists2 = j$.inArray('FieldFX EAM', assigned);
 			if (iexists2 < 0)
 			{
-				FXhtml += '<p>EAM User: User has not been granted access to FieldFX EAM.</p>';
+				FXhtml += '<p>EAM User: User has not been granted access to <b>FieldFX EAM</b>.</p>';
 			}
 		}
 		if (isTimecard)
@@ -3478,12 +3478,12 @@ j$(document).ready(function()
 			var iexists = j$.inArray('FieldFX Base Package', assigned);
 			if (iexists < 0)
 			{
-				FXhtml += '<p>Timecard User: User has not been granted access to FieldFX Base Package.</p>';
+				FXhtml += '<p>Timecard User: User has not been granted access to <b>FieldFX Base Package</b>.</p>';
 			}
 			var iexists2 = j$.inArray('FieldFX Timecards', assigned);
 			if (iexists2 < 0)
 			{
-				FXhtml += '<p>Timecard User: User has not been granted access to FieldFX Timecards.</p>';
+				FXhtml += '<p>Timecard User: User has not been granted access to <b>FieldFX Timecards</b>.</p>';
 			}
 		}
 		if (isMapping)
@@ -3491,12 +3491,12 @@ j$(document).ready(function()
 			var iexists = j$.inArray('FieldFX Base Package', assigned);
 			if (iexists < 0)
 			{
-				FXhtml += '<p>FX Scheduling & Dispatch Mapping User: User has not been granted access to FieldFX Base Package.</p>';
+				FXhtml += '<p>FX Scheduling & Dispatch Mapping User: User has not been granted access to <b>FieldFX Base Package</b>.</p>';
 			}
 			var iexists2 = j$.inArray('FieldFX Mapping', assigned);
 			if (iexists2 < 0)
 			{
-				FXhtml += '<p>FX Scheduling & Dispatch Mapping User: User has not been granted access to FieldFX Mapping.</p>';
+				FXhtml += '<p>FX Scheduling & Dispatch Mapping User: User has not been granted access to <b>FieldFX Mapping</b>.</p>';
 			}
 		}
 		return FXhtml;
@@ -3648,7 +3648,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>CPQ - Mobile User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + + d.Label + ' (' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>CPQ - Mobile User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if (isFXBackofficeCPQ && MinBackOfficeCPQObjectPermissions.hasItem(d.APIName))
