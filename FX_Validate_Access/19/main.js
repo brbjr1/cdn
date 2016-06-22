@@ -1768,20 +1768,7 @@ j$(document).ready(function()
 					});
 				});
 			}
-			var FXEformObjectWarningshtml = '';
-			if (result.FXObjects != undefined)
-			{
-				j$.each(result.FXRelatedObjects, function(index, d)
-				{
-					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == false)
-					{
-						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form Object ' + d.APIName + ' does not have a SyncId__c field that is marked as a unique external id .</p>';
-					}
-				});
-			}
-
-			j$('#FXEFormObjectWarnings').html(FXEformObjectWarningshtml);
-			callback(true);
+			
 		}
 		else if (pass == 2)
 		{
@@ -1961,8 +1948,34 @@ j$(document).ready(function()
 				});
 				oprtable.search('').columns().search('').draw();
 			}
-			callback(true);
+
+			var FXEformObjectWarningshtml = '';
+			if (result.FXObjects != undefined)
+			{
+				j$.each(result.FXRelatedObjects, function(index, d)
+				{
+					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == false)
+					{
+						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form Object ' + d.APIName + ' does not have a SyncId__c field that is marked as a unique external id .</p>';
+					}
+					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == true && d.HasEdit)
+					{
+						j$.each(d.fields, function(index, f)
+						{
+							if (f.Name == 'SyncId__c')
+							{
+								if (f.HasRead == false || f.HasEdit == false)
+								{
+									FXEformObjectWarningshtml += '<p>User has not been granted Read/Edit access to the SyncId__c field on ' + ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form Object ' + d.APIName + '.</p>';
+								}
+							}
+						});
+					}
+				});
+				j$('#FXEFormObjectWarnings').html(FXEformObjectWarningshtml);
+			}
 		}
+		callback(true);
 	}
 
 	function FindFieldPermissions(sobject)
