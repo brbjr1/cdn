@@ -1762,7 +1762,7 @@ j$(document).ready(function()
 							var isduplicate = j$.inArray('FX5__' + f.Name, FX5Fields);
 							if (isduplicate >= 0)
 							{
-								FXObjectWarningshtml += '<p>Object ' + d.APIName + ' Field ' + f.Name + ' is a duplicate of a managed package field.</p>';
+								FXObjectWarningshtml += '<p>Object ' + d.Label + ' (' + d.APIName + ') Field ' + f.Name + ' is a duplicate of a managed package field.</p>';
 							}
 						}
 					});
@@ -1956,7 +1956,7 @@ j$(document).ready(function()
 				{
 					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == false)
 					{
-						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object ' + d.Label + '(' + d.APIName + ') does not have a SyncId__c field that is marked as a unique external id .</p>';
+						FXEformObjectWarningshtml += '<p> '+ ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object ' + d.Label + ' (' + d.APIName + ') does not have a SyncId__c field that is marked as a unique external id .</p>';
 					}
 					if( (d.IsEform == true || d.IsEformChild == true) && d.OneFieldHasSyncId == true && d.HasEdit)
 					{
@@ -1966,7 +1966,7 @@ j$(document).ready(function()
 							{
 								if (f.HasRead == false || f.HasEdit == false)
 								{
-									FXEformObjectWarningshtml += '<p>User has not been granted Read/Edit access to the SyncId__c field on ' + ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object ' + d.Label + '(' + d.APIName + ').</p>';
+									FXEformObjectWarningshtml += '<p>User has not been granted Read/Edit access to the SyncId__c field on ' + ( d.IsEformChild == true? 'Child ':'' ) + 'FX Form object ' + d.Label + ' (' + d.APIName + ').</p>';
 								}
 							}
 						});
@@ -3558,7 +3558,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>Ticket - Mobile User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>Ticket - Mobile User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if (isFXBackofficeTicket && MinBackOfficeTicketingObjectPermissions.hasItem(d.APIName))
@@ -3603,7 +3603,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>Ticket - Back office User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>Ticket - Back office User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if (isFXmobileCPQ && MinMobileCPQPermissions.hasItem(d.APIName))
@@ -3648,7 +3648,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>CPQ - Mobile User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>CPQ - Mobile User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if (isFXBackofficeCPQ && MinBackOfficeCPQObjectPermissions.hasItem(d.APIName))
@@ -3693,7 +3693,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>CPQ - Back Office User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>CPQ - Back Office User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if ((isFXBackOfficeSchedulingAndDispatch || isMapping) && MinBackOfficeSchedulingAndDispatchObjectPermissions.hasItem(d.APIName))
@@ -3738,7 +3738,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>FX Scheduling & Dispatch - Back Office User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>FX Scheduling & Dispatch - Back Office User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if (isEAM && MinEAMObjectPermissions.hasItem(d.APIName))
@@ -3783,7 +3783,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>EAM User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>EAM User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 				if (isTimecard && MinTimecardObjectPermissions.hasItem(d.APIName))
@@ -3828,7 +3828,7 @@ j$(document).ready(function()
 					}
 					if (missingaccess != '')
 					{
-						FXObjectPermissionsWarningshtml += '<p>Timecard User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + '(' + d.APIName + ')</b>.</p>';
+						FXObjectPermissionsWarningshtml += '<p>Timecard User: User has not been granted <b>' + missingaccess + '</b> access to <b>' + d.Label + ' (' + d.APIName + ')</b>.</p>';
 					}
 				}
 			});

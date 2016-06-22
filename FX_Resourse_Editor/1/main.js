@@ -4,6 +4,7 @@ var salesforceAccessURL = ''; //if value then links will use frontdoor.jsp on li
 var loadphase = 1;
 var fontawesomeloadIcon = "fa fa-spinner fa-pulse fa-3x fa-fw";
 var jsforceAPIVersion = '36.0';
+var myconn;
 
 //IE support
 if (!String.prototype.startsWith)
@@ -33,7 +34,10 @@ if (!String.prototype.endsWith) {
 
 
 /******************END Event Handlers *************************************/
-
+var currenteditorvalue = '';
+var currenteditorType = '';
+var currentSelectedName = '';
+var currentSelected;
 j$(document).ready(function()
 {
 	//main loading
@@ -53,6 +57,7 @@ j$(document).ready(function()
 			else
 			{
 				mysessionId = conn.accessToken;
+				myconn = conn;
 				CurrentUserHasModifyAllDataAccess(conn, myuserid, function(err, hasaccessresult)
 				{
 					try
@@ -106,7 +111,7 @@ j$(document).ready(function()
 											salesforceAccessURL = conn.instanceUrl + '/secur/frontdoor.jsp?sid=' + conn.accessToken + '&retURL='
 										}
 
-										var myquery = "SELECT Id,Body,Name FROM StaticResource where NamespacePrefix = '' and ContentType in ('text/plain','application/javascript')";
+										var myquery = "SELECT Id,Body,Name FROM StaticResource where NamespacePrefix = '' and ContentType in ('text/plain','application/javascript','application/octet-stream')";
 										QueryRecords(conn, myquery, function(Queryerr, QueryResults)
 										{
 											if (Queryerr)
@@ -153,8 +158,11 @@ j$(document).ready(function()
 																				else
 																				{
 																					var presult = '';
+
+																					presult += '<style>button:disabled {border: 2px outset ButtonFace;  color: GrayText;  cursor: inherit;  background-color: #ddd;  background: #ddd;}</style>';
+
 																					presult += '<div id="header">Select Resorurce: ';
-																					presult += '<select onchange="OnSelectChange(this.value)">';
+																					presult += '<select id="sel1" onchange="OnSelectChange(this.value)">';
 																					if (QueryResults)
 																					{
 																						presult += '<option value="">--None--</option>';
@@ -168,7 +176,17 @@ j$(document).ready(function()
 																								var mydetail = zipresults.getItem(metaname);
 																								if(mydetail)
 																								{
-																									finalresult.push({Name:QueryResult.Name,Body:mydetail});
+																									var metadetail;
+																									var metadetailname = 'unpackaged/staticresources/' + QueryResult.Name + '.resource-meta.xml';
+																									if (zipresults.hasItem(metadetailname) == true)
+																									{
+																										var mymetadetail = zipresults.getItem(metadetailname);
+																										if(mymetadetail)
+																										{
+																											metadetail = mymetadetail;
+																										}
+																									}
+																									finalresult.push({Name:QueryResult.Name,Body:mydetail,Metadetail:metadetail});
 																									presult += '<option value="'+QueryResult.Name+'">'+QueryResult.Name+'</option>';
 																								}
 																							}
@@ -176,7 +194,8 @@ j$(document).ready(function()
 																					}
 
 																					presult += '</select>';
-																					presult += '<button id="bntsave" type="button">Save</button>';
+																					presult += '<button id="bntcancel" onclick="docancel();" style="display:none;" type="button">Cancel</button>';
+																					presult += '<button id="bntsave" onclick="dosave();" style="display:none;" type="button">Save</button>';
 
 																					presult += '</div>';
 
@@ -193,6 +212,23 @@ j$(document).ready(function()
 																					RemoteResult = finalresult;
 																					j$("#pagediv").LoadingOverlay("hide");
 																					j$("#pagediv").html(presult);
+
+																					//var button = $("#buttonId");
+																					j$("#texteditor").on('input',function(e)
+																					{
+																					  if(e.target.value === currenteditorvalue)
+																					  {
+																					  	j$('#sel1').removeAttr('disabled');
+																					    j$("#bntcancel").hide();
+																					    j$("#bntsave").hide();
+																					  } 
+																					  else 
+																					  {
+																					  	j$('#sel1').attr('disabled','disabled');
+																					    j$("#bntcancel").show();
+																					    j$("#bntsave").show();
+																					  }
+																					});
 																					
 																				}
 																			}
@@ -260,9 +296,12 @@ j$(document).ready(function()
 				var Result = RemoteResult[ir1];
 				if (Result.Name == sel)
 				{
-
+					currentSelectedName = sel;
+					currentSelected = Result;
+					console.log(currentSelected);
 					if (sel == 'FX_Mobile_Filters' || sel == 'FX_Mobile_Rules')
 					{
+						
 						if (!editor)
 						{
 							var container = document.getElementById("jsoneditor");
@@ -277,30 +316,27 @@ j$(document).ready(function()
 							    },
 							    onError: function (err) {
 							      alert(err);
+							    },
+							    onChange: function()
+							    {
+							    	 if(editor.getText() === currenteditorvalue)
+									  {
+									  	j$('#sel1').removeAttr('disabled');
+									    j$("#bntcancel").hide();
+									    j$("#bntsave").hide();
+									  } 
+									  else 
+									  {
+									  	j$('#sel1').attr('disabled','disabled');
+									    j$("#bntcancel").show();
+									    j$("#bntsave").show();
+									  }
 							    }
 							  };
 						   	
 						   	editor = new JSONEditor(container, options);
 						}
-						var jsondata = Result.Body;
-						if (jsondata.startsWith('window.FX_Mobile_Filters ='))
-						{
-							jsondata = jsondata.substring('window.FX_Mobile_Filters ='.length);
-						}
-						if (jsondata.startsWith('window.FX_Mobile_Filters='))
-						{
-							jsondata = jsondata.substring('window.FX_Mobile_Filters='.length);
-						}
-
-						if (jsondata.startsWith('window.FX_Mobile_Rules ='))
-						{
-							jsondata = jsondata.substring('window.FX_Mobile_Rules ='.length);
-						}
-						if (jsondata.startsWith('window.FX_Mobile_Rules='))
-						{
-							jsondata = jsondata.substring('window.FX_Mobile_Rules='.length);
-						}
-
+						var jsondata = getJsonData(Result.Body);
 						var validerrors = ''
 						{
 							try 
@@ -317,17 +353,23 @@ j$(document).ready(function()
 						{
 						 	alert('You must fix valadation errors: ' + validerrors);
 						 	j$("#texteditor").show();
+						 	currenteditorType = 'text';
+						 	currenteditorvalue = Result.Body;
 							j$("#texteditor").val(Result.Body);
 						}
 						else
 						{
+							currenteditorType = 'json';
+							currenteditorvalue = jsondata;
 					        editor.setText(jsondata);
 							j$("#jsoneditor").show();
 						}
 				    }
 				    else
 				    {
+				    	currenteditorType = 'text';
 				    	j$("#texteditor").show();
+				    	currenteditorvalue = Result.Body;
 						j$("#texteditor").val(Result.Body);
 					}
 					ffound = true;
@@ -339,6 +381,133 @@ j$(document).ready(function()
 		{
 			j$("#content").val('');
 		}
+	}
+
+	function docancel()
+	{
+		if (currenteditorType == 'text')
+		{
+			j$("#texteditor").val(currenteditorvalue);
+			j$('#sel1').removeAttr('disabled');
+		    j$("#bntcancel").hide();
+		    j$("#bntsave").hide();
+		}
+		if (currenteditorType == 'json')
+		{
+			editor.setText(currenteditorvalue);
+			j$('#sel1').removeAttr('disabled');
+			j$("#bntcancel").hide();
+			j$("#bntsave").hide();
+		}
+	}
+
+	function dosave()
+	{
+		if (currentSelected && currentSelected.Metadetail && currentSelected.Metadetail.StaticResource)
+		{
+			var metadata;
+			var sourcetxt = '';
+			var savesourcetxt = '';
+			var mydescription = (currentSelected.Metadetail.StaticResource.description != undefined && currentSelected.Metadetail.StaticResource.description != 'undefined' ? currentSelected.Metadetail.StaticResource.description : '');
+			if (currenteditorType == 'text')
+			{
+				sourcetxt = j$("#texteditor").val();
+				savesourcetxt = sourcetxt;
+				var mycontent = window.btoa(sourcetxt);//base64 encode
+				var metadata = [{cacheControl:currentSelected.Metadetail.StaticResource.cacheControl, content:mycontent,contentType:currentSelected.Metadetail.StaticResource.contentType,description:mydescription,fullName:currentSelectedName}]
+			}
+			if (currenteditorType == 'json')
+			{
+				sourcetxt = editor.getText();
+				var jsondata = sourcetxt;
+				if (currentSelectedName == 'FX_Mobile_Filters' )
+				{
+					jsondata = 'window.FX_Mobile_Filters =' + jsondata
+				}
+				if (currentSelectedName == 'FX_Mobile_Rules' )
+				{
+					jsondata = 'window.FX_Mobile_Rules =' + jsondata
+				}
+				savesourcetxt = jsondata;
+				var mycontent = window.btoa(jsondata);//base64 encode
+				var metadata = [{cacheControl:currentSelected.Metadetail.StaticResource.cacheControl, content:mycontent,contentType:currentSelected.Metadetail.StaticResource.contentType,description:mydescription,fullName:currentSelectedName}]
+			}
+
+			if (metadata)
+			{
+				console.log(metadata);
+				j$("#pagediv").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
+				myconn.metadata.upsert('StaticResource', metadata, function(err, results) 
+				{
+					j$("#pagediv").LoadingOverlay("hide");
+					if (err) 
+					{ 
+						alert(err);
+						console.error(err); 
+					}
+					else
+					{
+						var success = false;
+						if (Array.isArray(results) )
+						{
+							for (var i=0; i < results.length; i++) 
+							{
+								var result = results[i];
+								console.log('success ? : ' + result.success);
+								console.log('created ? : ' + result.created);
+								console.log('fullName : ' + result.fullName);
+								success = result.success;
+							}
+						}
+						else
+						{
+							var result = results;
+							console.log('success ? : ' + result.success);
+							console.log('created ? : ' + result.created);
+							console.log('fullName : ' + result.fullName);
+							success = result.success;
+						}
+					}
+					if (success == true)
+					{
+						currenteditorvalue = sourcetxt;
+						j$('#sel1').removeAttr('disabled');
+					    j$("#bntcancel").hide();
+					    j$("#bntsave").hide();
+					    currentSelected.Body = savesourcetxt;
+					}
+					else
+					{
+						alert("Error saving Staticesource");
+					}
+					
+				});
+			}
+		}
+
+	}
+
+	function getJsonData(j)
+	{
+		var jsondata = j;
+		if (jsondata.startsWith('window.FX_Mobile_Filters ='))
+		{
+			jsondata = jsondata.substring('window.FX_Mobile_Filters ='.length);
+		}
+		if (jsondata.startsWith('window.FX_Mobile_Filters='))
+		{
+			jsondata = jsondata.substring('window.FX_Mobile_Filters='.length);
+		}
+
+		if (jsondata.startsWith('window.FX_Mobile_Rules ='))
+		{
+			jsondata = jsondata.substring('window.FX_Mobile_Rules ='.length);
+		}
+		if (jsondata.startsWith('window.FX_Mobile_Rules='))
+		{
+			jsondata = jsondata.substring('window.FX_Mobile_Rules='.length);
+		}
+		return jsondata;
 	}
 
 	function DoJSforceLogin(sid, lurl, luser, lpass, lproxy, callback)
