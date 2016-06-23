@@ -1,7 +1,7 @@
 var validversions = [];
 validversions.push('1');
-
-var myversion ='1'; //update to latest to change version
+validversions.push('2');
+var myversion ='2'; //update to latest to change version
 var mysessionId = '';
 
 
@@ -86,18 +86,12 @@ mycdnurl = mycdnurl + '/'+myversion+'/';
 var loadurls = [];
 loadurls.push({url:'https://code.jquery.com/jquery-2.2.4.min.js',type:'js'});
 
-//using custom namespace bootstrp to stop collision with sf
-loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/Custom_Bootstrap/201606090600/Bootstrap_v3.3.6/css/bootstrap.min.css',type:'css'});
-loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/Custom_Bootstrap/201606090600/Bootstrap_v3.3.6/js/bootstrap.min.js',type:'js'});
-
-
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsforce/1.6.3/jsforce.min.js',type:'js'});
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js',type:'js'});
 loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/js/201606090600/xml2json.min.js',type:'js'});
 loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/animation/201606141100/jquery-loading-overlay-1.3/src/loadingoverlay.min.js',type:'js'});
 loadurls.push({url:'https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css',type:'css'});
 
-//loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/ajv/4.1.3/ajv.min.js',type:'js'});
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/5.5.6/jsoneditor.min.css',type:'css'});
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/5.5.6/jsoneditor.min.js',type:'js'});
 
@@ -107,10 +101,6 @@ loadresourcesinorder(loadurls, function()
 
 	j2$(document).ready(function()
 	{
-		var mainhtml = '<style>.versioninfo {font-size: 10px;margin-top: 20px;color: #999999;}</style><div class="bs" id="pagediv"></div>';
-		loadjscssfile(mycdnurl + 'main.js','js');
-		j2$( "#MainContent" ).html(mainhtml);
-		/*
 		j2$( "#MainContent" ).load( mycdnurl + 'main.htm',  function( response, status, xhr ) 	
 		{
 			if ( status == "error" ) 
@@ -124,7 +114,6 @@ loadresourcesinorder(loadurls, function()
 				loadjscssfile(mycdnurl + 'main.js','js');
 			}
 		});
-		*/
 	});
 
 });
