@@ -1,11 +1,12 @@
 var j$ = jQuery.noConflict();
 var RemoteResult; //global var of final results
 var salesforceAccessURL = ''; //if value then links will use frontdoor.jsp on links to SalesForce pages
-var loadphase = 1;
 var fontawesomeloadIcon = "fa fa-spinner fa-pulse fa-3x fa-fw";
 var jsforceAPIVersion = '36.0';
 var myconn;
 var finalresult = [];
+var editor;
+var homeurl ='/FX_Resourse_Editor/test.htm';
 
 //IE support
 if (!String.prototype.startsWith)
@@ -32,71 +33,299 @@ if (!String.prototype.endsWith) {
 
 /******************Event Handlers *************************************/
 
+	function DoOathLoginLogin()
+	{
+		var myenv = j$('#id_environment').val();
+		if (myenv != '')
+		{
+			j$('.loading').show();
+			var oauth2 = GetOauth(myenv);
+			var rurl =  oauth2.getAuthorizationUrl({scope: 'full', state:myenv});
+			window.location.replace(rurl);
+		}
+	}
+	
+	function OnSelectChange(sel)
+	{
+		j$("#texteditor").hide();
+		j$("#jsoneditor").hide();
+		var value = sel.value;
+		var ffound = false;
+		if (sel && sel != '' && RemoteResult && RemoteResult.length > 0)
+		{
+			for (var ir1 = 0; ir1 < RemoteResult.length; ir1++)
+			{
+				var Result = RemoteResult[ir1];
+				if (Result.Name == sel)
+				{
+					currentSelectedName = sel;
+					currentSelected = Result;
+					console.log(currentSelected);
+					if (sel == 'FX_Mobile_Filters' || sel == 'FX_Mobile_Rules')
+					{
+						
+						if (!editor)
+						{
+							var container = document.getElementById("jsoneditor");
+					        var options = {
+							    mode: 'tree',
+							    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
+							    onError: function (err) {
+							      alert(err.toString());
+							    },
+							    onModeChange: function (newMode, oldMode) {
+							      //console.log('Mode switched from', oldMode, 'to', newMode);
+							    },
+							    onError: function (err) {
+							      alert(err);
+							    },
+							    onChange: function()
+							    {
+							    	 if(editor.getText() === currenteditorvalue)
+									  {
+									  	j$('#sel1').removeAttr('disabled');
+									    j$("#bntcancel").hide();
+									    j$("#bntsave").hide();
+									  } 
+									  else 
+									  {
+									  	j$('#sel1').attr('disabled','disabled');
+									    j$("#bntcancel").show();
+									    j$("#bntsave").show();
+									  }
+							    }
+							  };
+						   	
+						   	editor = new JSONEditor(container, options);
+						}
+						var jsondata = getJsonData(Result.Body);
+						var validerrors = ''
+						{
+							try 
+							{
+							 	var c = j$.parseJSON(jsondata);
+							}
+							catch (err) 
+							{
+							  	validerrors = err;
+							}
+						}
+					
+						if (validerrors != '')
+						{
+						 	alert('You must fix valadation errors: ' + validerrors);
+						 	j$("#texteditor").show();
+						 	currenteditorType = 'text';
+						 	currenteditorvalue = Result.Body;
+							j$("#texteditor").val(Result.Body);
+						}
+						else
+						{
+							currenteditorType = 'json';
+							currenteditorvalue = jsondata;
+					        editor.setText(jsondata);
+							j$("#jsoneditor").show();
+						}
+				    }
+				    else
+				    {
+				    	currenteditorType = 'text';
+				    	j$("#texteditor").show();
+				    	currenteditorvalue = Result.Body;
+						j$("#texteditor").val(Result.Body);
+					}
+					ffound = true;
+				}
+			}
+
+		}
+		if (ffound == false)
+		{
+			j$("#content").val('');
+		}
+	}
+
+	function docancel()
+	{
+		if (currenteditorType == 'text')
+		{
+			j$("#texteditor").val(currenteditorvalue);
+			j$('#sel1').removeAttr('disabled');
+		    j$("#bntcancel").hide();
+		    j$("#bntsave").hide();
+		}
+		if (currenteditorType == 'json')
+		{
+			editor.setText(currenteditorvalue);
+			j$('#sel1').removeAttr('disabled');
+			j$("#bntcancel").hide();
+			j$("#bntsave").hide();
+		}
+	}
+
+	function dosave()
+	{
+		if (currentSelected && currentSelected.Metadetail && currentSelected.Metadetail.StaticResource)
+		{
+			var metadata;
+			var sourcetxt = '';
+			var savesourcetxt = '';
+			var mydescription = (currentSelected.Metadetail.StaticResource.description != undefined && currentSelected.Metadetail.StaticResource.description != 'undefined' ? currentSelected.Metadetail.StaticResource.description : '');
+			if (currenteditorType == 'text')
+			{
+				sourcetxt = j$("#texteditor").val();
+				savesourcetxt = sourcetxt;
+				var mycontent = window.btoa(sourcetxt);//base64 encode
+				var metadata = [{cacheControl:currentSelected.Metadetail.StaticResource.cacheControl, content:mycontent,contentType:currentSelected.Metadetail.StaticResource.contentType,description:mydescription,fullName:currentSelectedName}]
+			}
+			if (currenteditorType == 'json')
+			{
+				sourcetxt = editor.getText();
+				var jsondata = sourcetxt;
+				if (currentSelectedName == 'FX_Mobile_Filters' )
+				{
+					jsondata = 'window.FX_Mobile_Filters =' + jsondata
+				}
+				if (currentSelectedName == 'FX_Mobile_Rules' )
+				{
+					jsondata = 'window.FX_Mobile_Rules =' + jsondata
+				}
+				savesourcetxt = jsondata;
+				var mycontent = window.btoa(jsondata);//base64 encode
+				var metadata = [{cacheControl:currentSelected.Metadetail.StaticResource.cacheControl, content:mycontent,contentType:currentSelected.Metadetail.StaticResource.contentType,description:mydescription,fullName:currentSelectedName}]
+			}
+
+			if (metadata)
+			{
+				console.log(metadata);
+				j$("#MainDetail").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
+				myconn.metadata.upsert('StaticResource', metadata, function(err, results) 
+				{
+					j$("#MainDetail").LoadingOverlay("hide");
+					if (err) 
+					{ 
+						alert(err);
+						console.error(err); 
+					}
+					else
+					{
+						var success = false;
+						if (Array.isArray(results) )
+						{
+							for (var i=0; i < results.length; i++) 
+							{
+								var result = results[i];
+								console.log('success ? : ' + result.success);
+								console.log('created ? : ' + result.created);
+								console.log('fullName : ' + result.fullName);
+								success = result.success;
+							}
+						}
+						else
+						{
+							var result = results;
+							console.log('success ? : ' + result.success);
+							console.log('created ? : ' + result.created);
+							console.log('fullName : ' + result.fullName);
+							success = result.success;
+						}
+					}
+					if (success == true)
+					{
+						currenteditorvalue = sourcetxt;
+						j$('#sel1').removeAttr('disabled');
+					    j$("#bntcancel").hide();
+					    j$("#bntsave").hide();
+					    currentSelected.Body = savesourcetxt;
+					}
+					else
+					{
+						alert("Error saving Staticesource");
+					}
+					
+				});
+			}
+		}
+
+	}
+
+	function logout()
+	{
+		if (myconn)
+		{
+			j$("#MainDetail").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
+			myconn.logout(function(err) 
+			{
+				j$("#MainDetail").LoadingOverlay("hide");
+				if (err) 
+				{ 
+					ProcessError(err); 
+				}
+				window.location.replace(homeurl);
+			});
+		}
+		else
+		{
+			window.location.replace(homeurl);
+		}
+	}
 
 
 /******************END Event Handlers *************************************/
 
-function getParameterName(name,loc) 
-{
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(loc);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
+
 
 var currenteditorvalue = '';
 var currenteditorType = '';
 var currentSelectedName = '';
 var currentSelected;
-var oauth2Options = {
-	    clientId: '3MVG9xOCXq4ID1uEUdmtqOVR2qv7cJ9kiRrlXA3pGbBJklG_lYrhdalyWQflXDiDRWb0IPLfYiAz7xN.lhOfq',
-	    clientSecret: '3676781568829065227',
-	    redirectUri: 'https://localhost:8443/FX_Resourse_Editor/test.htm?purl=https://localhost:8443/proxy'
-	};
-
-var proxyurl = getParameterName('purl',document.location.search);
-if (proxyurl)
-{
-	oauth2Options.proxyUrl = proxyurl;
-}
-var oauth2 = new jsforce.OAuth2(oauth2Options);
 
 j$(document).ready(function()
 {
     var mycode = getParameterName('code',document.location.search);
-    if (mycode)
+    var mystate = getParameterName('state',document.location.search);
+    if (mycode && mystate)
     {
-    	j$("#pagediv").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
-    	var conn = new jsforce.Connection({oauth2: oauth2});
+    	j$("#MainDetail").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
+    	var conn = new jsforce.Connection({oauth2: GetOauth(mystate)});
 	    conn.authorize(mycode, function(err, userInfo) 
 	    {
 	        if (err) 
         	{ 
         		ProcessError(err);
-        		j$("#pagediv").LoadingOverlay("hide");
+        		window.location.replace(homeurl);
+        		j$("#MainDetail").LoadingOverlay("hide");
+        		j$('#logindiv').show();
         	}
         	else
         	{
-        		j$('#logindiv').hide();
+        		j$('#loginDetails').show();
 
-        		//conn.proxyUrl = 'https://localhost:8443/proxy';
-		        console.log('Access Token: ' + conn.accessToken);
+        		j$('#logindiv').hide();
+        		j$('#mainContent').show();
+
+        		console.log('Access Token: ' + conn.accessToken);
 		        console.log('Instance URL: ' + conn.instanceUrl);
 		        console.log('User ID: ' + userInfo.id);
 		        console.log('Org ID: ' + userInfo.organizationId);
 		        myuserid = userInfo.id;
+		        j$('#username').html(userInfo.id);
 
 		        {
 					mysessionId = conn.accessToken;
 					var myconnoptions = {
 					  sessionId : conn.accessToken,
 					  serverUrl : conn.instanceUrl,
-					  proxyUrl  :'https://localhost:8443/proxy'
 					};
 
+					var proxyurl = getParameterName('purl',document.location.search);
 					if (proxyurl)
 					{
 						myconnoptions.proxyUrl = proxyurl;
+					}
+					else
+					{
+						myconnoptions.proxyUrl = 'https://localhost:8443/proxy';
 					}
 
 					myconn = new jsforce.Connection(myconnoptions);
@@ -253,8 +482,8 @@ j$(document).ready(function()
 
 																						presult += '</div>';
 																						RemoteResult = finalresult;
-																						j$("#pagediv").LoadingOverlay("hide");
-																						j$("#pagediv").html(presult);
+																						j$("#MainDetail").LoadingOverlay("hide");
+																						j$("#mainContent").html(presult);
 
 																						//var button = $("#buttonId");
 																						j$("#texteditor").on('input',function(e)
@@ -318,242 +547,66 @@ j$(document).ready(function()
 		    }
 	    });
     }
+    else
+    {
+    	j$('#logindiv').show();
+    }
 	
 });
 
 
 
-
 /******************Support Functions *************************************/
 
- 	
-
-	function DoOathLoginLogin()
+	function getParameterName(name,loc) 
 	{
-		var myenv = j$('#id_environment').val();
-		if (myenv == 'Sandbox')
+	    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(loc);
+	    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+
+	function GetOauth(state2)
+	{
+		var oauth2Options = 
 		{
-			myloginurl = 'https://test.salesforce.com';
+		    clientId: '3MVG9xOCXq4ID1uEUdmtqOVR2qv7cJ9kiRrlXA3pGbBJklG_lYrhdalyWQflXDiDRWb0IPLfYiAz7xN.lhOfq',
+		    clientSecret: '3676781568829065227',
+		    redirectUri: 'https://localhost:8443/FX_Resourse_Editor/test.htm?purl=https://localhost:8443/proxy'
+		};
+
+		
+
+		var proxyurl = getParameterName('purl',document.location.search);
+		if (proxyurl)
+		{
+			oauth2Options.proxyUrl = proxyurl;
 		}
 		else
 		{
-			myloginurl = 'https://login.salesforce.com';
+			oauth2Options.proxyUrl = 'https://localhost:8443/proxy';
 		}
-
-		if (myloginurl != '')
+		var myloginUrl;
+		if (state2)
 		{
-			//alert(myloginurl);
-			var rurl =  oauth2.getAuthorizationUrl({scope: 'full'});
-			window.location.replace(rurl);//myloginurl + '/services/oauth2/authorize?response_type=token&client_id=3MVG9xOCXq4ID1uEUdmtqOVR2qv7cJ9kiRrlXA3pGbBJklG_lYrhdalyWQflXDiDRWb0IPLfYiAz7xN.lhOfq&redirect_uri=https://localhost:8443/FX_Resourse_Editor/test.htm?purl=https://localhost:8443/proxy');
-		}
-
-	}
-
-	var editor;
-	function OnSelectChange(sel)
-	{
-		j$("#texteditor").hide();
-		j$("#jsoneditor").hide();
-		var value = sel.value;
-		var ffound = false;
-		if (sel && sel != '' && RemoteResult && RemoteResult.length > 0)
-		{
-			for (var ir1 = 0; ir1 < RemoteResult.length; ir1++)
+			if (state2 == 'Sandbox')
 			{
-				var Result = RemoteResult[ir1];
-				if (Result.Name == sel)
-				{
-					currentSelectedName = sel;
-					currentSelected = Result;
-					console.log(currentSelected);
-					if (sel == 'FX_Mobile_Filters' || sel == 'FX_Mobile_Rules')
-					{
-						
-						if (!editor)
-						{
-							var container = document.getElementById("jsoneditor");
-					        var options = {
-							    mode: 'tree',
-							    modes: ['code', 'form', 'text', 'tree', 'view'], // allowed modes
-							    onError: function (err) {
-							      alert(err.toString());
-							    },
-							    onModeChange: function (newMode, oldMode) {
-							      //console.log('Mode switched from', oldMode, 'to', newMode);
-							    },
-							    onError: function (err) {
-							      alert(err);
-							    },
-							    onChange: function()
-							    {
-							    	 if(editor.getText() === currenteditorvalue)
-									  {
-									  	j$('#sel1').removeAttr('disabled');
-									    j$("#bntcancel").hide();
-									    j$("#bntsave").hide();
-									  } 
-									  else 
-									  {
-									  	j$('#sel1').attr('disabled','disabled');
-									    j$("#bntcancel").show();
-									    j$("#bntsave").show();
-									  }
-							    }
-							  };
-						   	
-						   	editor = new JSONEditor(container, options);
-						}
-						var jsondata = getJsonData(Result.Body);
-						var validerrors = ''
-						{
-							try 
-							{
-							 	var c = j$.parseJSON(jsondata);
-							}
-							catch (err) 
-							{
-							  	validerrors = err;
-							}
-						}
-					
-						if (validerrors != '')
-						{
-						 	alert('You must fix valadation errors: ' + validerrors);
-						 	j$("#texteditor").show();
-						 	currenteditorType = 'text';
-						 	currenteditorvalue = Result.Body;
-							j$("#texteditor").val(Result.Body);
-						}
-						else
-						{
-							currenteditorType = 'json';
-							currenteditorvalue = jsondata;
-					        editor.setText(jsondata);
-							j$("#jsoneditor").show();
-						}
-				    }
-				    else
-				    {
-				    	currenteditorType = 'text';
-				    	j$("#texteditor").show();
-				    	currenteditorvalue = Result.Body;
-						j$("#texteditor").val(Result.Body);
-					}
-					ffound = true;
-				}
+				myloginUrl = 'https://test.salesforce.com';
 			}
-
-		}
-		if (ffound == false)
-		{
-			j$("#content").val('');
-		}
-	}
-
-	function docancel()
-	{
-		if (currenteditorType == 'text')
-		{
-			j$("#texteditor").val(currenteditorvalue);
-			j$('#sel1').removeAttr('disabled');
-		    j$("#bntcancel").hide();
-		    j$("#bntsave").hide();
-		}
-		if (currenteditorType == 'json')
-		{
-			editor.setText(currenteditorvalue);
-			j$('#sel1').removeAttr('disabled');
-			j$("#bntcancel").hide();
-			j$("#bntsave").hide();
-		}
-	}
-
-	function dosave()
-	{
-		if (currentSelected && currentSelected.Metadetail && currentSelected.Metadetail.StaticResource)
-		{
-			var metadata;
-			var sourcetxt = '';
-			var savesourcetxt = '';
-			var mydescription = (currentSelected.Metadetail.StaticResource.description != undefined && currentSelected.Metadetail.StaticResource.description != 'undefined' ? currentSelected.Metadetail.StaticResource.description : '');
-			if (currenteditorType == 'text')
+			else
 			{
-				sourcetxt = j$("#texteditor").val();
-				savesourcetxt = sourcetxt;
-				var mycontent = window.btoa(sourcetxt);//base64 encode
-				var metadata = [{cacheControl:currentSelected.Metadetail.StaticResource.cacheControl, content:mycontent,contentType:currentSelected.Metadetail.StaticResource.contentType,description:mydescription,fullName:currentSelectedName}]
-			}
-			if (currenteditorType == 'json')
-			{
-				sourcetxt = editor.getText();
-				var jsondata = sourcetxt;
-				if (currentSelectedName == 'FX_Mobile_Filters' )
-				{
-					jsondata = 'window.FX_Mobile_Filters =' + jsondata
-				}
-				if (currentSelectedName == 'FX_Mobile_Rules' )
-				{
-					jsondata = 'window.FX_Mobile_Rules =' + jsondata
-				}
-				savesourcetxt = jsondata;
-				var mycontent = window.btoa(jsondata);//base64 encode
-				var metadata = [{cacheControl:currentSelected.Metadetail.StaticResource.cacheControl, content:mycontent,contentType:currentSelected.Metadetail.StaticResource.contentType,description:mydescription,fullName:currentSelectedName}]
-			}
-
-			if (metadata)
-			{
-				console.log(metadata);
-				j$("#pagediv").LoadingOverlay("show",{image : "",fontawesome : fontawesomeloadIcon});
-				myconn.metadata.upsert('StaticResource', metadata, function(err, results) 
-				{
-					j$("#pagediv").LoadingOverlay("hide");
-					if (err) 
-					{ 
-						alert(err);
-						console.error(err); 
-					}
-					else
-					{
-						var success = false;
-						if (Array.isArray(results) )
-						{
-							for (var i=0; i < results.length; i++) 
-							{
-								var result = results[i];
-								console.log('success ? : ' + result.success);
-								console.log('created ? : ' + result.created);
-								console.log('fullName : ' + result.fullName);
-								success = result.success;
-							}
-						}
-						else
-						{
-							var result = results;
-							console.log('success ? : ' + result.success);
-							console.log('created ? : ' + result.created);
-							console.log('fullName : ' + result.fullName);
-							success = result.success;
-						}
-					}
-					if (success == true)
-					{
-						currenteditorvalue = sourcetxt;
-						j$('#sel1').removeAttr('disabled');
-					    j$("#bntcancel").hide();
-					    j$("#bntsave").hide();
-					    currentSelected.Body = savesourcetxt;
-					}
-					else
-					{
-						alert("Error saving Staticesource");
-					}
-					
-				});
+				myloginUrl = 'https://login.salesforce.com';
 			}
 		}
-
+		if (myloginUrl)
+		{
+			oauth2Options.loginUrl = myloginUrl;
+		}
+		return new jsforce.OAuth2(oauth2Options);
 	}
 
+	
+	
 	function getJsonData(j)
 	{
 		var jsondata = j;
@@ -576,90 +629,6 @@ j$(document).ready(function()
 		}
 		return jsondata;
 	}
-
-	/*
-	function DoJSforceLogin(sid, lurl, luser, lpass, lproxy,linstanceUrl, callback)
-	{
-		var conn;
-		if (sid != null && sid != '')
-		{
-			var options = {
-				accessToken: sid
-			}
-			if (lproxy != null)
-			{
-				options.proxyUrl = lproxy;
-			}
-			if (linstanceUrl != null)
-			{
-				options.instanceUrl = linstanceUrl;
-			}
-			conn = new jsforce.Connection(options);
-			//callback(null, conn);
-			
-			conn.authorize(sid, function(err, userInfo) 
-			{
-			    if (err) 
-		    	{ 
-		    		callback(err, null);
-		    	}
-		    	else
-		    	{
-				    // Now you can get the access token, refresh token, and instance URL information.
-				    // Save them to establish connection next time.
-				    console.log(conn.accessToken);
-				    console.log(conn.refreshToken);
-				    console.log(conn.instanceUrl);
-				    console.log("User ID: " + userInfo.id);
-				    console.log("Org ID: " + userInfo.organizationId);
-				    // ...
-
-			    	callback(null, conn);
-			    }
-		  	});
-		  	
-
-			
-		}
-		else if (lurl != null && luser != null && lpass != null && lurl != '' && luser != '' && lpass != '')
-		{
-			//login with user/pass is only used for testing
-			//when calling from sf accessToken is used
-			conn = new jsforce.Connection(
-			{
-				// you can change loginUrl to connect to sandbox or prerelease env.
-				loginUrl: myloginurl,
-				proxyUrl: lproxy
-			});
-			conn.login(luser, lpass, function(err, userInfo)
-			{
-				if (err)
-				{
-					callback('Error logging in: ' + err, null);
-				}
-				else
-				{
-					// Now you can get the access token and instance URL information.
-					// Save them to establish connection next time.
-					// console.log(conn.accessToken);
-					//console.log(conn.instanceUrl);
-					// logged in user property
-					//console.log("User ID: " + userInfo.id);
-					// console.log("Org ID: " + userInfo.organizationId);
-					myuserid = userInfo.id;
-					// ...
-					callback(null, conn);
-				}
-			});
-		}
-		else
-		{
-			callback('Not able to login!', null);
-		}
-	}
-
-	*/
-
 
 	function CurrentUserHasModifyAllDataAccess(conn, tid, callback)
 	{

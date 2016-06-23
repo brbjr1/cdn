@@ -6,65 +6,75 @@
     	color: #999999;
     }
 </style>
-<div class="bs" id="pagediv">
+<div class="bs">
+	<div id="pagediv">
 
+		<div id="loginDetails" style="display:none">
 
-<div id="logindiv" class="col-md-12">
-			
+			<nav class="navbar navbar-default">
 
-	<div class="col-md-6 col-md-offset-3">
+			    <div class="container-fluid">
+			    	UserName: <span id="username"></span>
+			    	<br />
+			    	<a onclick="logout()">logout</a>
 
-		<h1>FX Resource Editor</h1>
-		<p>
-			This tool provides..
-		</p>
-		<p>
-			None of your organisation information or data is captured or kept from running this tool.
-		</p>
+			    </div>
+
+		    </nav>
+
+		</div>
 		
-		<div id="login_table">
+		<div class="clear"></div>
 
-			<!--<form action="." method="POST" onsubmit="hideTable();" oncomplete="showTable();" id="loginForm"> 	-->
-				
+		<div id="MainDetail" class="col-md-12">
+			<div id="logindiv" style="display:none;" class="col-md-12">
+						
 
-				<table class="login_table">
+				<div class="col-md-6 col-md-offset-3">
 
-					<tbody><tr>
-						<td width="125">
-							<label for="id_environment">Environment</label>
-						</td>
-						<td width="130">
-							<select id="id_environment" name="environment" class="form-control" style="width:125px;">
-								<option value="Production">Production</option>
-								<option value="Sandbox">Sandbox</option>
-							</select>
-						</td>
-						<td>
-							<input type="submit" value="Login" onclick="DoOathLoginLogin();">
-						</td>
-					</tr>
+					<h1>FX Resource Editor</h1>
+					<p>
+						This tool provides..
+					</p>
+					<p>
+						None of your organization information or data is captured or kept from running this tool.
+					</p>
+					
+					<div id="login_table">
+						<table class="login_table">
+							<tbody><tr>
+								<td width="125">
+									<label for="id_environment">Environment</label>
+								</td>
+								<td width="130">
+									<select id="id_environment" name="environment" class="form-control" style="width:125px;">
+										<option value="Production">Production</option>
+										<option value="Sandbox">Sandbox</option>
+									</select>
+								</td>
+								<td>
+									<input type="submit" value="Login" onclick="DoOathLoginLogin();">
+								</td>
+							</tr>
 
-				</tbody></table>
+						</tbody>
+						</table>
 
-				<div class="loading" style="display: none;">
-					<div style="float:left;">
-						<img src="/static/images/loading.gif" alt="Loading" title="Loading">
-					</div>
-					<div style="float:left;margin-left:20px;">
-						<h1 style="font-size:1.5em;margin-top:20px;">Accessing Salesforce...</h1>
-						<p>Logging in with OAuth 2.0</p>
+						<div class="loading" style="display: none;">
+							<div id="loadingp" style="float:left;" class="fontawesome fa fa-spinner fa-pulse fa-3x fa-fw">
+							</div>
+							<div style="float:left;margin-left:20px;">
+								<h1 style="font-size:1.5em;margin-top:20px;">Accessing Salesforce...</h1>
+								<p>Logging in with OAuth 2.0</p>
+							</div>
+						</div>
 					</div>
 				</div>
+			</div>
 
-			<!--</form>-->
+			<div id="mainContent" style="display:none" class="col-md-12"/>
 
 		</div>
 
-	</div>
-
-
-</div>
-
-  
-
+	</div>  
 </div>

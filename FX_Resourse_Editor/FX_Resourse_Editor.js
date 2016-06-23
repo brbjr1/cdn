@@ -86,6 +86,9 @@ mycdnurl = mycdnurl + '/'+myversion+'/';
 var loadurls = [];
 loadurls.push({url:'https://code.jquery.com/jquery-2.2.4.min.js',type:'js'});
 
+loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/Custom_Bootstrap/201606090600/Bootstrap_v3.3.6/css/bootstrap.min.css',type:'css'});
+loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/Custom_Bootstrap/201606090600/Bootstrap_v3.3.6/js/bootstrap.min.js',type:'js'});
+
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jsforce/1.6.3/jsforce.min.js',type:'js'});
 loadurls.push({url:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js',type:'js'});
 loadurls.push({url:'https://cdn.rawgit.com/brbjr1/cdn/master/js/201606090600/xml2json.min.js',type:'js'});
