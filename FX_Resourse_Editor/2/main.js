@@ -270,6 +270,14 @@ if (!String.prototype.endsWith) {
 		}
 	}
 
+	function ViewInSalesForce()
+	{
+		if (myconn)
+		{
+			window.open(salesforceAccessURL);
+		}
+	}
+
 
 /******************END Event Handlers *************************************/
 
@@ -299,17 +307,21 @@ j$(document).ready(function()
         	}
         	else
         	{
-        		j$('#loginDetails').show();
+        		
 
         		j$('#logindiv').hide();
         		j$('#mainContent').show();
+
+        		var myOrgId = '';
 
         		console.log('Access Token: ' + conn.accessToken);
 		        console.log('Instance URL: ' + conn.instanceUrl);
 		        console.log('User ID: ' + userInfo.id);
 		        console.log('Org ID: ' + userInfo.organizationId);
+		        myOrgId = userInfo.organizationId;
 		        myuserid = userInfo.id;
-		        j$('#username').html(userInfo.id);
+		        //j$('#username').html(userInfo.id);
+		        //j$('#loginDetails').show();
 
 		        {
 					mysessionId = conn.accessToken;
@@ -330,7 +342,7 @@ j$(document).ready(function()
 
 					myconn = new jsforce.Connection(myconnoptions);
 
-					CurrentUserHasModifyAllDataAccess(myconn, myuserid, function(err, hasaccessresult)
+					CurrentUserHasModifyAllDataAccess(myconn, myuserid, function(err, hasaccessresult, myuserdetails)
 					{
 						try
 						{
@@ -346,192 +358,206 @@ j$(document).ready(function()
 								}
 								else
 								{
-									myconn.identity(function(err, res) 
+									var myquery = "SELECT Id,Name FROM Organization where Id = '"+myOrgId+"'";
+									QueryRecords(myconn, myquery, function(Orgyerr, OrgResults)
 									{
-										if (err) 
-								  		{ 
-									  		ProcessError(err); 
-									  	}
-									  	else
-									  	{
-									  		if (res.urls && res.urls.users)
-									  		{
-												//console.log("user ID: " + res.user_id);
-												//console.log("organization ID: " + res.organization_id);
-												//console.log("username: " + res.username);
-												//console.log("display name: " + res.display_name);
-												var link = document.createElement('a');
-												//  set href to any path
-												link.setAttribute('href', res.urls.users);
-
-												//  get any piece of the url you're interested in
-												link.hostname;  //  'example.com'
-												link.port;      //  12345
-												link.search;    //  '?startIndex=1&pageSize=10'
-												link.pathname;  //  '/blog/foo/bar'
-												link.protocol;  //  'http:'
-
-												//  cleanup for garbage collection
-												link = null;
-												if (!myconn.instanceUrl || myconn.instanceUrl == '')
-												{
-													myconn.instanceUrl = link.protocol + '//' + link.hostname;
-												}
-											}
-											if (myconn.instanceUrl)
+										if (Orgyerr)
+										{
+											ProcessError('Error:' + Queryerr);
+										}
+										else
+										{
+											j$('#userdetail').html((myuserdetails.Name + ' AT '+ OrgResults[0].Name +' ON API ' + jsforceAPIVersion).toUpperCase() );
+		        							j$('#loginDetails').show();
+		        							myconn.identity(function(err, res) 
 											{
-												salesforceAccessURL = myconn.instanceUrl + '/secur/frontdoor.jsp?sid=' + myconn.accessToken + '&retURL='
-											}
+												if (err) 
+										  		{ 
+											  		ProcessError(err); 
+											  	}
+											  	else
+											  	{
+											  		if (res.urls && res.urls.users)
+											  		{
+														//console.log("user ID: " + res.user_id);
+														//console.log("organization ID: " + res.organization_id);
+														//console.log("username: " + res.username);
+														//console.log("display name: " + res.display_name);
+														var link = document.createElement('a');
+														//  set href to any path
+														link.setAttribute('href', res.urls.users);
 
-											var myquery = "SELECT Id,Body,Name FROM StaticResource where NamespacePrefix = '' and ContentType in ('text/plain','application/javascript','application/octet-stream')";
-											QueryRecords(myconn, myquery, function(Queryerr, QueryResults)
-											{
-												if (Queryerr)
-												{
-													ProcessError('Error:' + Queryerr);
-												}
-												else
-												{
-													var searchfor = [];
-													for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
-													{
-														searchfor.push(QueryResults[ir1].Name);
-													}
-													var mypackage = {'types': [],'version': jsforceAPIVersion};
-													mypackage.types.push({'members': searchfor,'name': 'StaticResource'});
-													myconn.metadata.retrieve({unpackaged: mypackage}, function(retreiveerr, retreivemetadata)
-													{
-														try
+														//  get any piece of the url you're interested in
+														link.hostname;  //  'example.com'
+														link.port;      //  12345
+														link.search;    //  '?startIndex=1&pageSize=10'
+														link.pathname;  //  '/blog/foo/bar'
+														link.protocol;  //  'http:'
+
+														//  cleanup for garbage collection
+														link = null;
+														if (!myconn.instanceUrl || myconn.instanceUrl == '')
 														{
-															if (retreiveerr)
+															myconn.instanceUrl = link.protocol + '//' + link.hostname;
+														}
+													}
+													if (myconn.instanceUrl)
+													{
+														salesforceAccessURL = myconn.instanceUrl + '/secur/frontdoor.jsp?sid=' + myconn.accessToken + '&retURL='
+													}
+
+													var myquery = "SELECT Id,Body,Name FROM StaticResource where NamespacePrefix = '' and ContentType in ('text/plain','application/javascript','application/octet-stream')";
+													QueryRecords(myconn, myquery, function(Queryerr, QueryResults)
+													{
+														if (Queryerr)
+														{
+															ProcessError('Error:' + Queryerr);
+														}
+														else
+														{
+															var searchfor = [];
+															for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
 															{
-																ProcessError(retreiveerr);
+																searchfor.push(QueryResults[ir1].Name);
 															}
-															else
+															var mypackage = {'types': [],'version': jsforceAPIVersion};
+															mypackage.types.push({'members': searchfor,'name': 'StaticResource'});
+															myconn.metadata.retrieve({unpackaged: mypackage}, function(retreiveerr, retreivemetadata)
 															{
-																DocheckRetrieveStatus(myconn, retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult)
+																try
 																{
-																	try
+																	if (retreiveerr)
 																	{
-																		if (retreivemetadataresulterr)
+																		ProcessError(retreiveerr);
+																	}
+																	else
+																	{
+																		DocheckRetrieveStatus(myconn, retreivemetadata.id, function(retreivemetadataresulterr, retreivemetadataresult)
 																		{
-																			ProcessError(retreivemetadataresulterr);
-																		}
-																		else
-																		{
-																			AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile, function(zipresultserr, zipresults)
+																			try
 																			{
-																				try
+																				if (retreivemetadataresulterr)
 																				{
-																					if (zipresultserr)
+																					ProcessError(retreivemetadataresulterr);
+																				}
+																				else
+																				{
+																					AddZipContentsToHashTableAsJson(retreivemetadataresult.zipFile, function(zipresultserr, zipresults)
 																					{
-																						ProcessError(zipresultserr);
-																					}
-																					else
-																					{
-																						var presult = '';
-
-																						presult += '<style>button:disabled {border: 2px outset ButtonFace;  color: GrayText;  cursor: inherit;  background-color: #ddd;  background: #ddd;}</style>';
-
-																						presult += '<div id="header">Select Resorurce: ';
-																						presult += '<select id="sel1" onchange="OnSelectChange(this.value)">';
-																						if (QueryResults)
+																						try
 																						{
-																							presult += '<option value="">--None--</option>';
-																							for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
+																							if (zipresultserr)
 																							{
-																								var QueryResult = QueryResults[ir1];
+																								ProcessError(zipresultserr);
+																							}
+																							else
+																							{
+																								var presult = '';
 
-																								var metaname = 'unpackaged/staticresources/' + QueryResult.Name + '.resource';
-																								if (zipresults.hasItem(metaname) == true)
+																								presult += '<style>button:disabled {border: 2px outset ButtonFace;  color: GrayText;  cursor: inherit;  background-color: #ddd;  background: #ddd;}</style>';
+
+																								presult += '<div id="header">Select Resorurce: ';
+																								presult += '<select id="sel1" onchange="OnSelectChange(this.value)">';
+																								if (QueryResults)
 																								{
-																									var mydetail = zipresults.getItem(metaname);
-																									if(mydetail)
+																									presult += '<option value="">--None--</option>';
+																									for (var ir1 = 0; ir1 < QueryResults.length; ir1++)
 																									{
-																										var metadetail;
-																										var metadetailname = 'unpackaged/staticresources/' + QueryResult.Name + '.resource-meta.xml';
-																										if (zipresults.hasItem(metadetailname) == true)
+																										var QueryResult = QueryResults[ir1];
+
+																										var metaname = 'unpackaged/staticresources/' + QueryResult.Name + '.resource';
+																										if (zipresults.hasItem(metaname) == true)
 																										{
-																											var mymetadetail = zipresults.getItem(metadetailname);
-																											if(mymetadetail)
+																											var mydetail = zipresults.getItem(metaname);
+																											if(mydetail)
 																											{
-																												metadetail = mymetadetail;
+																												var metadetail;
+																												var metadetailname = 'unpackaged/staticresources/' + QueryResult.Name + '.resource-meta.xml';
+																												if (zipresults.hasItem(metadetailname) == true)
+																												{
+																													var mymetadetail = zipresults.getItem(metadetailname);
+																													if(mymetadetail)
+																													{
+																														metadetail = mymetadetail;
+																													}
+																												}
+																												finalresult.push({Name:QueryResult.Name,Body:mydetail,Metadetail:metadetail});
+																												presult += '<option value="'+QueryResult.Name+'">'+QueryResult.Name+'</option>';
 																											}
 																										}
-																										finalresult.push({Name:QueryResult.Name,Body:mydetail,Metadetail:metadetail});
-																										presult += '<option value="'+QueryResult.Name+'">'+QueryResult.Name+'</option>';
 																									}
 																								}
+
+																								presult += '</select>';
+																								presult += '<button id="bntcancel" onclick="docancel();" style="display:none;" type="button">Cancel</button>';
+																								presult += '<button id="bntsave" onclick="dosave();" style="display:none;" type="button">Save</button>';
+
+																								presult += '</div>';
+
+																								presult += '<div id="main">';
+
+																								presult += '<textarea id="texteditor" style="display:none;width: 100%; height: 800px;" />';
+																								presult += '<div id="jsoneditor" style="display:none;width: 100%; height: 800px;"></div>'
+
+																								presult += '</div>';
+
+																								presult += '<div id="footer">';
+
+																								presult += '</div>';
+																								RemoteResult = finalresult;
+																								j$("#MainDetail").LoadingOverlay("hide");
+																								j$("#mainContent").html(presult);
+
+																								//var button = $("#buttonId");
+																								j$("#texteditor").on('input',function(e)
+																								{
+																								  if(e.target.value === currenteditorvalue)
+																								  {
+																								  	j$('#sel1').removeAttr('disabled');
+																								    j$("#bntcancel").hide();
+																								    j$("#bntsave").hide();
+																								  } 
+																								  else 
+																								  {
+																								  	j$('#sel1').attr('disabled','disabled');
+																								    j$("#bntcancel").show();
+																								    j$("#bntsave").show();
+																								  }
+																								});
+																								
 																							}
 																						}
-
-																						presult += '</select>';
-																						presult += '<button id="bntcancel" onclick="docancel();" style="display:none;" type="button">Cancel</button>';
-																						presult += '<button id="bntsave" onclick="dosave();" style="display:none;" type="button">Save</button>';
-
-																						presult += '</div>';
-
-																						presult += '<div id="main">';
-
-																						presult += '<textarea id="texteditor" style="display:none;width: 100%; height: 800px;" />';
-																						presult += '<div id="jsoneditor" style="display:none;width: 100%; height: 800px;"></div>'
-
-																						presult += '</div>';
-
-																						presult += '<div id="footer">';
-
-																						presult += '</div>';
-																						RemoteResult = finalresult;
-																						j$("#MainDetail").LoadingOverlay("hide");
-																						j$("#mainContent").html(presult);
-
-																						//var button = $("#buttonId");
-																						j$("#texteditor").on('input',function(e)
+																						catch (err)
 																						{
-																						  if(e.target.value === currenteditorvalue)
-																						  {
-																						  	j$('#sel1').removeAttr('disabled');
-																						    j$("#bntcancel").hide();
-																						    j$("#bntsave").hide();
-																						  } 
-																						  else 
-																						  {
-																						  	j$('#sel1').attr('disabled','disabled');
-																						    j$("#bntcancel").show();
-																						    j$("#bntsave").show();
-																						  }
-																						});
-																						
-																					}
+																							console.log(err);
+																							ProcessError(err);
+																							throw err;
+																						}
+																					});
 																				}
-																				catch (err)
-																				{
-																					console.log(err);
-																					ProcessError(err);
-																					throw err;
-																				}
-																			});
-																		}
+																			}
+																			catch (err)
+																			{
+																				console.log(err);
+																				ProcessError(err);
+																				throw err;
+																			}
+																		});
 																	}
-																	catch (err)
-																	{
-																		console.log(err);
-																		ProcessError(err);
-																		throw err;
-																	}
-																});
-															}
-														}
-														catch (err)
-														{
-															console.log(err);
-															ProcessError(err);
-															throw err;
+																}
+																catch (err)
+																{
+																	console.log(err);
+																	ProcessError(err);
+																	throw err;
+																}
+															});
 														}
 													});
 												}
 											});
 										}
+
 									});
 								}
 							}
@@ -632,19 +658,19 @@ j$(document).ready(function()
 
 	function CurrentUserHasModifyAllDataAccess(conn, tid, callback)
 	{
-		var myquery = "select Id, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='" + tid + "'";
+		var myquery = "select Id, UserName, UserRole.Name, UserRoleId,Name,ProfileId,Profile.PermissionsModifyAllData from User where id ='" + tid + "'";
 		var HasModifyAllDataAccess = false; // this is needed to access the metadata api
 		QueryRecords(conn, myquery, function(UserQueryerr, UserQueryResults)
 		{
 			if (UserQueryerr)
 			{
-				callback('Error:' + UserQueryerr, null)
+				callback('Error:' + UserQueryerr, null, null)
 			}
 			var myUser = UserQueryResults[0];
 			var HasModifyAllDataAccess = myUser.Profile.PermissionsModifyAllData;
 			if (HasModifyAllDataAccess == true)
 			{
-				callback(null, true);
+				callback(null, true, myUser);
 			}
 			else
 			{
@@ -671,7 +697,7 @@ j$(document).ready(function()
 								}
 							}
 						}
-						callback(null, HasModifyAllDataAccess);
+						callback(null, HasModifyAllDataAccess, myUser);
 					}
 				});
 			}
